@@ -70,6 +70,12 @@ Defined action maps in `InputSystem_Actions.inputactions`:
 - **`CompileProject`** — Triggers a script recompile from the menu
 - **`ForceSaveSceneAndProject`** — Force-saves without confirmation
 
+## Version Control
+
+- Commit work to git regularly with clean, descriptive commit messages.
+- Push commits to GitHub after each logical unit of work so progress is never lost.
+- Commit messages should be imperative, concise, and describe *what* changed and *why* (e.g. `Add player movement controller with sprint support`).
+
 ## Running Tests
 
 Tests use Unity Test Runner (Window > General > Test Runner). No standalone CLI test runner is configured; tests must be run from within the Unity Editor.
