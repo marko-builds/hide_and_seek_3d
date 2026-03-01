@@ -86,3 +86,45 @@ Tests use Unity Test Runner (Window > General > Test Runner). No standalone CLI 
 - Prefer `SceneSingleton<T>` over `Singleton<T>` for managers that need serialized scene references (UI bindings, etc.).
 - Use `WaitFor.Seconds(t)` instead of `new WaitForSeconds(t)` in coroutines to avoid GC pressure.
 - No Assembly Definitions are set up for game scripts yet — all game code compiles into the default `Assembly-CSharp` assembly.
+
+## SOLID Principles
+
+Apply SOLID principles to all game scripts, especially managers and systems with non-trivial logic.
+
+**Single Responsibility** — Each class does one thing. A `PlayerMovement` component moves the player; it does not also handle input reading or health. Split concerns into separate MonoBehaviours or plain C# classes.
+
+**Open/Closed** — Extend behaviour through composition and interfaces, not by modifying existing classes. Prefer adding a new `IInteractable` implementor over editing a switch-case in an existing manager.
+
+**Liskov Substitution** — Subtypes must be usable wherever their base type is expected without breaking behaviour. Avoid overriding methods in ways that violate the base contract (e.g. throwing where the base does not).
+
+**Interface Segregation** — Prefer small, focused interfaces (`IHideable`, `IDetectable`) over wide ones. Components should only depend on the interface members they actually use.
+
+**Dependency Inversion** — Depend on abstractions (interfaces/abstract classes), not concrete types. Inject dependencies via constructor, method parameter, or `[SerializeField]` inspector reference rather than calling `FindObjectOfType` or `GetComponent` from within a class.
+
+## Design Patterns
+
+Use these patterns where they solve a real problem. Do not apply them speculatively.
+
+**Observer / Event System** — Decouple systems with C# events or `UnityEvent`. Example: `GameEvents.OnPlayerDetected` lets the UI, audio, and AI each react without knowing about each other. Prefer typed `Action<T>` delegates over `UnityEvent` for code-to-code communication.
+
+**State Machine** — Model character and game states explicitly. Each state is a class implementing a common `IState` interface with `Enter`, `Tick`, and `Exit` methods. A `StateMachine` owns the current state and drives transitions. Avoids flag-soup in Update loops.
+
+**Command** — Wrap player actions as command objects to support undo, replay, or deferred execution. Useful for Interact and Attack inputs.
+
+**Object Pool** — Never `Instantiate`/`Destroy` at runtime for frequently spawned objects (projectiles, footstep decals, VFX). Use Unity's built-in `ObjectPool<T>` (`UnityEngine.Pool`).
+
+**Strategy** — Swap algorithms at runtime behind an interface. Example: a seeker AI can switch between `PatrolStrategy`, `SearchStrategy`, and `ChaseStrategy` without changing the AI component.
+
+**Factory Method** — Centralise prefab instantiation (or pool checkout) behind a factory so callers never reference `Resources.Load` or hard-coded prefab paths.
+
+**Decorator** — Layer optional behaviours (e.g. adding a speed buff on top of base movement) without subclassing. Implement via wrapper classes sharing a common interface.
+
+**Service Locator (limited use)** — Acceptable only for truly global services (AudioManager, SceneLoader) where DI is impractical. Prefer injecting interfaces over calling `ServiceLocator.Get<T>()` in gameplay code.
+
+## Performance & GC Rules
+
+- Avoid allocations in `Update`, `FixedUpdate`, and hot coroutine paths. No LINQ, no `string` concatenation, no `new` for value-type wrappers.
+- Cache `GetComponent` results in `Awake`/`Start`; never call them per frame.
+- Use `TryGetComponent` instead of `GetComponent` when the component may be absent.
+- Physics queries (`OverlapSphere`, `Raycast`) should use the non-allocating variants with pre-allocated result arrays.
+- Profile before optimising. Use the Unity Profiler and Memory Profiler before concluding something is a bottleneck.
