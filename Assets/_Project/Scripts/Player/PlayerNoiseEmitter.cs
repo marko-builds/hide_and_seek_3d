@@ -19,8 +19,13 @@ namespace HideAndSeek
 
         private void Update()
         {
-            // TODO: read stance from PlayerMovement and compute noise level via PlayerData multipliers
-            // NoiseEmitter.Emit(new NoiseEvent(transform.position, CurrentNoiseLevel, NoiseTag));
+            float multiplier = _movement.IsSprinting ? _data.sprintNoiseMultiplier
+                             : _movement.IsCrouching ? _data.crouchNoiseMultiplier
+                             : _data.walkNoiseMultiplier;
+
+            CurrentNoiseLevel = _movement.IsMoving ? multiplier : 0f;
+            if (_movement.IsMoving)
+                NoiseEmitter.Emit(new NoiseEvent(transform.position, CurrentNoiseLevel, NoiseTag));
         }
     }
 }

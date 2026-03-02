@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace HideAndSeek
@@ -11,10 +12,15 @@ namespace HideAndSeek
     public class EnemyController : MonoBehaviour
     {
         [SerializeField] private EnemyData _data;
+        [SerializeField] private Transform[] _waypoints;
 
         public EnemyData Data => _data;
+        public Transform[] Waypoints => _waypoints;
         public EnemyDetection Detection { get; private set; }
         public EnemyNavigation Navigation { get; private set; }
+
+        public event Action OnPlayerCaught;
+        public void NotifyPlayerCaught() => OnPlayerCaught?.Invoke();
 
         private StateMachine _stateMachine;
 

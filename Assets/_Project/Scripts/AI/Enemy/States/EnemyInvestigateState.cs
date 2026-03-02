@@ -3,13 +3,15 @@ using UnityEngine;
 namespace HideAndSeek
 {
     /// <summary>
-    /// Enemy moves to the last known noise position and looks around.
+    /// Enemy moves to the last known noise/sight position and looks around.
     /// Transitions to Chase if the player is spotted, or back to Patrol on timeout.
     /// </summary>
     public class EnemyInvestigateState : BaseState
     {
         private readonly EnemyController _enemy;
         private readonly Vector3 _targetPosition;
+        private float _lookTimer;
+        private bool _arrived;
 
         public EnemyInvestigateState(EnemyController enemy, Vector3 targetPosition)
         {
@@ -21,13 +23,31 @@ namespace HideAndSeek
         {
             _enemy.Navigation.SetSpeed(_enemy.Data.investigateSpeed);
             _enemy.Navigation.SetDestination(_targetPosition);
+            _lookTimer = _enemy.Data.investigationLookDuration;
+            _arrived = false;
         }
 
         public override void Tick()
         {
-            // TODO: on arrival, look around (rotate through scan angles)
-            // TODO: transition to Chase if player fully detected
-            // TODO: transition to Patrol on search timeout
+            if (_enemy.Detection.SuspicionMeter.Suspicion >= 1f)
+            {
+                _enemy.ChangeState(new EnemyChaseState(_enemy));
+                return;
+            }
+
+            if (!_arrived)
+            {
+                if (_enemy.Navigation.IsAtDestination)
+                    _arrived = true;
+                return;
+            }
+
+            _lookTimer -= Time.deltaTime;
+            if (_lookTimer <= 0f)
+            {
+                _enemy.Detection.SuspicionMeter.Reset();
+                _enemy.ChangeState(new EnemyPatrolState(_enemy));
+            }
         }
     }
 }

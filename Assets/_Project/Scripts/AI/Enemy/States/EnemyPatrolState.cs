@@ -9,8 +9,6 @@ namespace HideAndSeek
     public class EnemyPatrolState : BaseState
     {
         private readonly EnemyController _enemy;
-
-        // TODO: inject waypoint list via constructor or ScriptableObject
         private int _waypointIndex;
 
         public EnemyPatrolState(EnemyController enemy) => _enemy = enemy;
@@ -18,14 +16,44 @@ namespace HideAndSeek
         public override void Enter()
         {
             _enemy.Navigation.SetSpeed(_enemy.Data.patrolSpeed);
-            // TODO: set first waypoint destination
+            GoToCurrentWaypoint();
         }
 
         public override void Tick()
         {
-            // TODO: advance to next waypoint on arrival
-            // TODO: check suspicion; transition to Investigate if threshold crossed
-            // TODO: transition to Chase if fully suspicious
+            float suspicion = _enemy.Detection.SuspicionMeter.Suspicion;
+
+            if (suspicion >= 1f)
+            {
+                _enemy.ChangeState(new EnemyChaseState(_enemy));
+                return;
+            }
+
+            if (suspicion >= _enemy.Data.investigateSuspicionThreshold)
+            {
+                _enemy.ChangeState(new EnemyInvestigateState(_enemy, _enemy.Detection.LastKnownPlayerPosition));
+                return;
+            }
+
+            if (_enemy.Detection.ConsumePendingNoise(out Vector3 noisePos))
+            {
+                _enemy.ChangeState(new EnemyInvestigateState(_enemy, noisePos));
+                return;
+            }
+
+            if (HasWaypoints() && _enemy.Navigation.IsAtDestination)
+            {
+                _waypointIndex = (_waypointIndex + 1) % _enemy.Waypoints.Length;
+                GoToCurrentWaypoint();
+            }
         }
+
+        private void GoToCurrentWaypoint()
+        {
+            if (HasWaypoints())
+                _enemy.Navigation.SetDestination(_enemy.Waypoints[_waypointIndex].position);
+        }
+
+        private bool HasWaypoints() => _enemy.Waypoints != null && _enemy.Waypoints.Length > 0;
     }
 }

@@ -15,6 +15,9 @@ MonoBehaviour:
   walkSpeed: 3
   sprintSpeed: 6
   crouchSpeed: 1.5
+  acceleration: 20
+  deceleration: 15
+  turnSpeed: 720
   walkNoiseMultiplier: 0.5
   sprintNoiseMultiplier: 1
   crouchNoiseMultiplier: 0.1

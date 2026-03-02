@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1db2a1b41e2ea221e9c529dcfd7b4dc7, type: 3}
+  m_Name: EnemyData
+  m_EditorClassIdentifier: Assembly-CSharp::HideAndSeek.EnemyData
+  fieldOfViewAngle: 90
+  detectionRange: 15
+  hearingRange: 10
+  suspicionRate: 0.5
+  suspicionDecayRate: 0.2
+  patrolSpeed: 6
+  chaseSpeed: 12
+  investigateSpeed: 8
+  closeDetectionRange: 3
+  catchDistance: 1.5
+  investigateSuspicionThreshold: 0.3
+  investigationLookDuration: 3
+  lostSightDuration: 2
+  searchSweepRadius: 5
+  searchSweepCount: 3
+  idleWaitDuration: 1
+  searchTimeout: 10

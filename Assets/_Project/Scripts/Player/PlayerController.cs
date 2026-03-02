@@ -24,7 +24,8 @@ namespace HideAndSeek
         public HidingSpot CurrentHidingSpot => Hiding.CurrentHidingSpot;
 
         // IDetectable
-        public DetectionProfile DetectionProfile { get; private set; }
+        [SerializeField] private DetectionProfile _detectionProfile = new();
+        public DetectionProfile DetectionProfile => _detectionProfile;
         public void OnDetected() { /* TODO: raise caught event */ }
 
         private void Awake()
