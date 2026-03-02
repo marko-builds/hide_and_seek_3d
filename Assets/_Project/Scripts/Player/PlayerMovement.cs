@@ -3,24 +3,45 @@ using UnityEngine;
 namespace HideAndSeek
 {
     /// <summary>
-    /// Handles player locomotion. Reads events from PlayerInputHandler
-    /// and drives a CharacterController using speeds from PlayerData.
+    /// Handles player locomotion. Reads events from PlayerInputHandler and drives a
+    /// Rigidbody with camera-relative movement, smooth acceleration/deceleration,
+    /// and rotation toward the direction of travel.
     /// </summary>
-    [RequireComponent(typeof(CharacterController))]
+    [RequireComponent(typeof(Rigidbody))]
     public class PlayerMovement : MonoBehaviour
     {
+        // Inspector
         [SerializeField] private PlayerData _data;
+        [SerializeField] private Camera _camera;   // Assign Main Camera (has CinemachineBrain)
 
-        private CharacterController _controller;
+        // Cached references (set in Awake)
+        private Rigidbody _rigidbody;
         private PlayerInputHandler _input;
 
+        // Runtime state — written by event handlers, read in FixedUpdate; no per-frame allocation
         private Vector2 _moveInput;
         private bool _isSprinting;
         private bool _isCrouching;
+        private Vector3 _currentVelocity;   // XZ smoothed velocity; Y from gravity preserved separately
+
+        private const float MovingThreshold = 0.001f;
+
+        // ── Public API ────────────────────────────────────────────────────────────
+
+        /// <summary>Returns true when the player is in the sprint stance.</summary>
+        public bool IsSprinting => _isSprinting;
+
+        /// <summary>Returns true when the player is in the crouch stance.</summary>
+        public bool IsCrouching => _isCrouching;
+
+        /// <summary>Returns true when the character has meaningful horizontal velocity.</summary>
+        public bool IsMoving => _currentVelocity.sqrMagnitude > MovingThreshold;
+
+        // ── Lifecycle ─────────────────────────────────────────────────────────────
 
         private void Awake()
         {
-            _controller = GetComponent<CharacterController>();
+            _rigidbody = GetComponent<Rigidbody>();
             _input = GetComponent<PlayerInputHandler>();
         }
 
@@ -42,20 +63,87 @@ namespace HideAndSeek
             _input.OnCrouchCancelled -= HandleCrouchCancelled;
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
+            Vector3 desiredVelocity = ComputeDesiredVelocity();
+            SmoothVelocity(desiredVelocity);
+            ApplyVelocityToRigidbody();
+            RotateTowardMovementDirection();
+        }
+
+        // ── Private Methods ───────────────────────────────────────────────────────
+
+        private Vector3 ComputeDesiredVelocity()
+        {
+            if (_moveInput.sqrMagnitude < MovingThreshold)
+                return Vector3.zero;
+
+            Vector3 camForward = _camera.transform.forward;
+            Vector3 camRight = _camera.transform.right;
+
+            // Flatten and re-normalize so a pitched-down camera doesn't inject Y into movement
+            camForward.y = 0f;
+            camRight.y = 0f;
+            camForward.Normalize();
+            camRight.Normalize();
+
+            // Guard against degenerate camera orientation (e.g. looking straight down)
+            if (camForward.sqrMagnitude < MovingThreshold)
+                camForward = Vector3.forward;
+
+            Vector3 direction = (camRight * _moveInput.x + camForward * _moveInput.y).normalized;
+
             float speed = _isCrouching ? _data.crouchSpeed
                         : _isSprinting ? _data.sprintSpeed
                         : _data.walkSpeed;
 
-            Vector3 move = new Vector3(_moveInput.x, 0f, _moveInput.y) * speed;
-            _controller.SimpleMove(move);
+            return direction * speed;
         }
 
+        private void SmoothVelocity(Vector3 desiredVelocity)
+        {
+            // Accelerate when gaining speed, decelerate when losing it
+            float rate = desiredVelocity.sqrMagnitude > _currentVelocity.sqrMagnitude
+                ? _data.acceleration
+                : _data.deceleration;
+
+            // MoveTowards gives linear feel and reaches target in finite time at a designer-tunable m/s²
+            _currentVelocity = Vector3.MoveTowards(_currentVelocity, desiredVelocity, rate * Time.fixedDeltaTime);
+        }
+
+        private void ApplyVelocityToRigidbody()
+        {
+            // Preserve Y so gravity accumulates normally; only drive XZ from locomotion
+            float yVelocity = _rigidbody.linearVelocity.y;
+            _rigidbody.linearVelocity = new Vector3(_currentVelocity.x, yVelocity, _currentVelocity.z);
+        }
+
+        private void RotateTowardMovementDirection()
+        {
+            // Early-out prevents LookRotation(zero) error and snap-to-forward when stopping
+            if (_currentVelocity.sqrMagnitude < MovingThreshold)
+                return;
+
+            Quaternion targetRotation = Quaternion.LookRotation(
+                new Vector3(_currentVelocity.x, 0f, _currentVelocity.z), Vector3.up);
+
+            // RotateTowards takes degrees/second, mapping directly to turnSpeed
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation, targetRotation, _data.turnSpeed * Time.fixedDeltaTime);
+        }
+
+        // ── Input Event Handlers ──────────────────────────────────────────────────
+
         private void HandleMove(Vector2 input) => _moveInput = input;
-        private void HandleSprintStarted() => _isSprinting = true;
+
+        private void HandleSprintStarted()
+        {
+            if (_isCrouching) return;   // Crouch takes priority; can't sprint while crouching
+            _isSprinting = true;
+        }
+
         private void HandleSprintCancelled() => _isSprinting = false;
-        private void HandleCrouchStarted() => _isCrouching = true;
+        private void HandleCrouchStarted()   => _isCrouching = true;
         private void HandleCrouchCancelled() => _isCrouching = false;
     }
 }

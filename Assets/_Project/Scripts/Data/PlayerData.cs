@@ -10,6 +10,11 @@ namespace HideAndSeek
         public float sprintSpeed = 6f;
         public float crouchSpeed = 1.5f;
 
+        [Header("Movement Feel")]
+        [Min(0f)] public float acceleration = 20f;
+        [Min(0f)] public float deceleration = 15f;
+        [Min(0f)] public float turnSpeed = 720f;   // degrees per second
+
         [Header("Noise Multipliers")]
         public float walkNoiseMultiplier = 0.5f;
         public float sprintNoiseMultiplier = 1f;
