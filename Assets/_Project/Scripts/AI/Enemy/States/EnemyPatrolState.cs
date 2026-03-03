@@ -41,11 +41,10 @@ namespace HideAndSeek
                 return;
             }
 
-            if (HasWaypoints() && _enemy.Navigation.IsAtDestination)
-            {
-                _waypointIndex = (_waypointIndex + 1) % _enemy.Waypoints.Length;
-                GoToCurrentWaypoint();
-            }
+            if (!HasWaypoints() || !_enemy.Navigation.IsAtDestination) return;
+            _waypointIndex = (_waypointIndex + 1) % _enemy.Waypoints.Length;
+            
+            GoToCurrentWaypoint();
         }
 
         private void GoToCurrentWaypoint()
@@ -54,6 +53,6 @@ namespace HideAndSeek
                 _enemy.Navigation.SetDestination(_enemy.Waypoints[_waypointIndex].position);
         }
 
-        private bool HasWaypoints() => _enemy.Waypoints != null && _enemy.Waypoints.Length > 0;
+        private bool HasWaypoints() => _enemy.Waypoints is { Length: > 0 };
     }
 }

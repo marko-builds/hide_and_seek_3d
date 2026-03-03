@@ -27,5 +27,5 @@ MonoBehaviour:
   lostSightDuration: 2
   searchSweepRadius: 5
   searchSweepCount: 3
-  idleWaitDuration: 1
+  idleWaitDuration: 2
   searchTimeout: 10
