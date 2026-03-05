@@ -21,7 +21,7 @@ The four pillars (The Room Has Rules / Silence Is a Tool / Legible Jeopardy / T
 | 1 | Sound Propagation Model | Core | MVP | Approved | design/gdd/sound-propagation-model.md | — |
 | 2 | Light Source System | Core | MVP | Approved | design/gdd/light-source-system.md | — |
 | 3 | Detection System | Core | MVP | Approved | design/gdd/detection-system.md | Sound Propagation Model, Light Source System |
-| 4 | Player Interaction System | Core | MVP | Not Started | — | — |
+| 4 | Player Interaction System | Core | MVP | Approved | design/gdd/player-interaction-system.md | — |
 | 5 | Checkpoint System | Core | MVP | Not Started | — | — |
 
 
@@ -229,10 +229,10 @@ The four pillars (The Room Has Rules / Silence Is a Tool / Legible Jeopardy / T
 | Metric | Count |
 | - | - |
 | Total systems identified | 27 |
-| Design docs started | 5 |
-| Design docs reviewed | 5 |
-| Design docs approved | 5 |
-| MVP systems designed | 5 / 15 |
+| Design docs started | 6 |
+| Design docs reviewed | 6 |
+| Design docs approved | 6 |
+| MVP systems designed | 6 / 15 |
 | Vertical Slice systems designed | 0 / 8 |
 
 
