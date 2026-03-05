@@ -113,7 +113,7 @@ walk = 0.65, carpet walk = 0.25. The SPM's F1 formula then applies the
 This is intentional: the BaseIntensity captures the acoustic character of the
 impact itself (a carpet footfall sounds different from a stone one at the source),
 while the multiplier captures how the surface transmits that sound outward. For
-non-footstep actions (sprint, crouch-walk on any surface, throw, interact, hide),
+non-footstep actions (sprint, throw, interact, hide),
 a single surface-agnostic BaseIntensity is used regardless of current floor type.
 The consequence of stacking both mechanisms for carpet walk (0.25 × 0.50 = 0.125)
 is documented as a design decision in EC-7.

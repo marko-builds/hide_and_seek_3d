@@ -1,6 +1,6 @@
 # Seeker AI
 
-> **Status**: Draft
+> **Status**: Approved
 > **Author**: game-designer
 > **Last Updated**: 2026-03-05
 > **Implements Pillar**: The Room Has Rules (Pillar 1), Legible Jeopardy (Pillar 3)
@@ -145,7 +145,7 @@ Total sweep duration (approximate): `searchSweepDirectionCount * (rotationTime_p
 
 **Phase 3 — Waypoint sweep:**
 
-After the directional sweep, the seeker visits the `searchWaypointCount` nearest patrol waypoints to the last known position (sorted by distance). It moves to each at `searchSpeedMultiplier * patrolSpeed` and performs a brief 2-direction scan (left 45 degrees, right 45 degrees) at each waypoint rather than the full directional sweep. This represents the seeker checking the obvious hiding spots near the last known position.
+After the directional sweep, the seeker visits the `searchWaypointCount` nearest patrol waypoints to the last known position (sorted by distance). It moves to each at `searchSpeedMultiplier * patrolSpeed` and performs a brief 2-direction scan at each waypoint: rotates left 45 degrees from current forward, holds for `sweepHoldDuration` seconds, then rotates right 90 degrees (45 degrees right of original forward), holds for `sweepHoldDuration` seconds. This is a 2-direction abbreviated sweep reusing the same `sweepHoldDuration` knob as Phase 2, requiring no additional tuning parameter. This represents the seeker checking the obvious hiding spots near the last known position.
 
 **Phase 4 — Return to patrol:**
 
@@ -175,19 +175,11 @@ The seeker moves at `chaseSpeedMultiplier * patrolSpeed`.
 
 **Catch attempt:**
 
-Each FixedUpdate during Chase, the seeker checks whether the player is within `catchRadius` of the seeker's position:
+The Seeker AI does **not** independently run the catch check. The Detection System owns catch dwell tracking using `catchRadius` and `catchDwellTime` from `EnemyData`, and publishes `RequestedState == Caught` when the threshold is met. The Seeker AI responds to this state transition exactly as it would to any other `RequestedState` change.
 
-```
-distance = Vector3.Distance(seekerPosition, playerPosition)
-if distance <= catchRadius:
-    catchDwellAccumulator += Time.fixedDeltaTime
-else:
-    catchDwellAccumulator = 0
-if catchDwellAccumulator >= catchDwellTime:
-    → Enter Caught state
-```
+The catch is not instantaneous — the Detection System requires the player to remain within `catchRadius` for `catchDwellTime` continuous seconds before firing `RequestedState == Caught`. Breaking proximity resets the Detection System's internal dwell accumulator. This gives the player a small but legible window to escape, preventing catches that feel instant and opaque. See Detection System GDD (AC-10, States and Transitions table) for the authoritative catch dwell specification.
 
-The catch is not instantaneous — the seeker must maintain proximity for `catchDwellTime` seconds. This gives the player a small but legible window to break proximity and escape, preventing catches that feel instant and opaque. The `catchDwellAccumulator` resets to zero the moment the player exceeds `catchRadius`, so the player must actually escape, not just momentarily dodge.
+On any exit from Chase state — whether to Searching (F-S4 conditions met) or to Caught — the Detection System resets `catchDwellAccumulator` to 0. Accumulated dwell time does not carry forward if the seeker re-enters Chase after a Searching phase.
 
 **Distractions do not redirect during Chase:**
 
@@ -198,14 +190,14 @@ If a `NoiseEvent` fires during Chase, the Detection System does not change `Requ
 **Speed:** `chaseSpeedMultiplier * patrolSpeed`.
 
 **Exit conditions:**
-- `catchDwellAccumulator >= catchDwellTime` → enter Caught
+- `DetectionOutput.RequestedState == Caught` → enter Caught
 - `DetectionOutput.SuspicionLevel < 75` after `chaseLostPatienceSeconds` of no LoS → enter Searching (see F-S4)
 
 ---
 
 ### 3.6 Caught Behavior
 
-**Entry condition:** `catchDwellAccumulator >= catchDwellTime` during Chase.
+**Entry condition:** `DetectionOutput.RequestedState == Caught` received from the Detection System.
 
 **Behavioral sequence:**
 
@@ -296,11 +288,13 @@ sweepTotalDuration     = 8 * (0.375 + 0.5) = 7.0 seconds
 | `searchTurnSpeed` | float | 60–240 deg/s | `EnemyData` | Rotation speed during sweep |
 | `sweepHoldDuration` | float | 0.2–1.5s | `EnemyData` | How long the seeker holds each direction |
 
-**Expected output range**: ~3.5s (min, at `searchSweepDirectionCount=4`, `searchTurnSpeed=240`, `sweepHoldDuration=0.2`) to ~80s (max, pathological values).
+**Expected output range**: ~2.3s (min, at `searchSweepDirectionCount=4`, `searchTurnSpeed=240`, `sweepHoldDuration=0.2`) to ~24s (max, at `searchSweepDirectionCount=12`, `searchTurnSpeed=60`, `sweepHoldDuration=1.5`).
 
 ---
 
-### F-S3: Catch Radius Check (per FixedUpdate)
+### F-S3: Catch Radius Check (Detection System — reference only)
+
+> **Owner: Detection System.** The Seeker AI does NOT run this formula. The Detection System computes it each FixedUpdate during Chase and publishes `RequestedState == Caught` when the threshold is met. This formula is reproduced here for cross-reference only.
 
 ```
 catchDistance            = Vector3.Distance(seekerTransform.position, playerTransform.position)
@@ -312,15 +306,17 @@ else:
     catchDwellAccumulator  = 0.0f
 
 isCaught                 = catchDwellAccumulator >= catchDwellTime
+// → Detection System publishes RequestedState = Caught
+// → Seeker AI responds by entering Caught state behavior
 ```
 
 | Variable | Type | Range | Source | Description |
 |----------|------|-------|--------|-------------|
-| `catchRadius` | float | 0.5–3.0m | `EnemyData` | Proximity radius within which a catch can be registered |
-| `catchDwellTime` | float | 0.1–0.5s | `EnemyData` | Continuous time in catchRadius required to register Caught |
-| `catchDwellAccumulator` | float | 0–∞ | runtime state | Accumulated time within catchRadius; resets on exit |
+| `catchRadius` | float | 0.5–2.0m | `EnemyData` | Proximity radius within which a catch can be registered |
+| `catchDwellTime` | float | 0.05–0.5s | `EnemyData` | Continuous time in catchRadius required to register Caught |
+| `catchDwellAccumulator` | float | 0–∞ | Detection System runtime state | Accumulated time within catchRadius; resets on exit; owned by Detection System |
 
-**Example (defaults):** `catchRadius = 1.5m`, `catchDwellTime = 0.2s` — player must remain within 1.5m of the seeker for 0.2 continuous seconds to be caught.
+**Defaults (from Detection System GDD):** `catchRadius = 1.2m`, `catchDwellTime = 0.15s` — player must remain within 1.2m for 0.15 continuous seconds to be caught. The Detection System GDD is the authoritative source for these values.
 
 ---
 
@@ -365,7 +361,7 @@ searchTargets   = sortedWaypoints[0 .. searchWaypointCount - 1]
 |----------|------------------|-----------|
 | Seeker loses player mid-Chase (LoS breaks, suspicion drops below 75 after `chaseLostPatienceSeconds`) | Seeker transitions to Searching. Navigates to last cached `LastKnownPlayerPosition` (position at the moment LoS broke). Searching Phase 2 sweep begins from that position. | Player must be hidden before `chaseLostPatienceSeconds` elapses or the seeker arrives in Chase. |
 | Seeker reaches last known position during Searching but player has moved | Seeker completes the full directional sweep regardless. If no LoS during the sweep, proceeds to Phase 3 (waypoint sweep). Sweep is not abbreviated. | The seeker does not "know" the player moved. Completing the sweep is consistent with deterministic behavior. |
-| Two seekers simultaneously in Chase on the same player | Each seeker runs its own independent state machine and catch check. The first to accumulate `catchDwellTime` invokes `GameManager.OnPlayerCaught()`. GameManager must handle `OnPlayerCaught` as idempotent — calling it twice in one frame must not double-trigger the fail state. | Each seeker has no knowledge of other seekers' states. |
+| Two seekers simultaneously in Chase on the same player | Each seeker runs its own independent state machine. Each seeker's Detection System instance independently tracks its own `catchDwellAccumulator`. The first seeker for whom the Detection System fires `RequestedState == Caught` causes that seeker to invoke `GameManager.OnPlayerCaught()`. GameManager must handle `OnPlayerCaught` as idempotent — calling it twice in one frame must not double-trigger the fail state. | Each seeker has no knowledge of other seekers' states. |
 | Player hides in a HidingSpot at or very near the last known position | Seeker arrives at LKP and performs the full sweep. HidingSpot concealment is resolved by the Detection System (`IHideable.IsConcealed`). If the spot provides LoS cover, the sweep will not detect the player. | Hiding at LKP is an intended play pattern — "hide right where they think you are." |
 | Patrol route has only one waypoint | Seeker arrives at the single waypoint, dwells (if marked), then immediately targets it again. Effectively stationary or oscillating. A `Debug.LogWarning` is logged at runtime. No exception or infinite loop. | Authored behavior — level designers must use ≥2 waypoints for any patrolling seeker. Warning surfaces the misconfiguration without breaking play. |
 | Catch animation interrupted by level end or scene transition | GameManager's scene load takes precedence. `OnPlayerCaught()` may not execute before the transition. GameManager must check scene state before processing the caught event. The seeker takes no further action. | Race condition between catch and win/scene-load events; GameManager is the authoritative arbiter. |
@@ -407,8 +403,8 @@ All values are fields on `EnemyData` (`Assets/_Project/Scripts/Data/EnemyData.cs
 | `searchWaypointCount` | Gate | 2 | 1–4 | Checks only nearest waypoint; may miss obvious hides | Visits most of patrol route; very long searches |
 | `chaseSpeedMultiplier` | Feel | 1.6× | 1.2–2.5× | Barely faster than patrol; player can walk away | Dramatically faster than sprint; near-impossible to outrun |
 | `chaseNavUpdateInterval` | Perf | 0.2s | 0.1–0.5s | Very frequent; precise tracking; higher NavMesh cost | Seeker lags behind fast direction changes; may feel laggy |
-| `catchRadius` | Feel | 1.5m | 0.5–3.0m | Must nearly collide to catch; very forgiving | Catches from arm's-length; feels unfair |
-| `catchDwellTime` | Feel | 0.2s | 0.1–0.5s | Near-instant catch; no escape window | Player can be adjacent for 0.5s and escape; too lenient |
+| `catchRadius` | Feel | 1.2m | 0.5–3.0m | Must nearly collide to catch; very forgiving | Catches from arm's-length; feels unfair |
+| `catchDwellTime` | Feel | 0.15s | 0.05–0.5s | Near-instant catch; no escape window | Player can be adjacent for 0.5s and escape; too lenient |
 | `chaseLostPatienceSeconds` | Gate | 3.0s | 1.0–6.0s | Gives up Chase quickly; player can hide anywhere briefly | Chases for very long after LoS breaks; brutal tension |
 | `waypointArrivalThreshold` | Feel | 0.3m | 0.1–0.8m | Must be very close to advance; may fight NavMesh rounding | Advances early; patrol appears to cut corners |
 | `patrolDwellDuration` | Gate | 1.5s | 0.0–5.0s | Dwell feels like a brief pause; small safe window | Seeker stands still for long periods; stop-start pacing |
@@ -426,7 +422,7 @@ All values are fields on `EnemyData` (`Assets/_Project/Scripts/Data/EnemyData.cs
 - [ ] **AC-05 — Search sweep covers all directions:** During Searching Phase 2, the seeker rotates through exactly `searchSweepDirectionCount` equidistant directions, holding each for `sweepHoldDuration`.
 - [ ] **AC-06 — Distraction redirects during Searching:** A NoiseEvent within hearing range during Searching causes the seeker to abandon its current sweep and navigate to the noise origin.
 - [ ] **AC-07 — Distraction does NOT redirect during Chase:** A NoiseEvent during Chase does not change the seeker's NavMeshAgent destination. It continues tracking the player's current position.
-- [ ] **AC-08 — Catch requires dwell time:** A player who enters then immediately exits `catchRadius` is not caught. `catchDwellAccumulator` resets to 0 on exit. Only continuous presence for ≥ `catchDwellTime` triggers Caught.
+- [ ] **AC-08 — Catch requires dwell time (Detection System owned):** The Detection System's catch dwell check requires the player to remain within `catchRadius` for ≥ `catchDwellTime` continuous seconds before publishing `RequestedState == Caught`. A player who enters then immediately exits `catchRadius` is not caught — the Detection System's internal `catchDwellAccumulator` resets to 0 on radius exit. The Seeker AI script contains no independent catch distance check.
 - [ ] **AC-09 — Caught fires GameManager once:** `GameManager.OnPlayerCaught()` is called exactly once per catch event, even if two seekers enter Caught in the same frame.
 - [ ] **AC-10 — Chase lost-player logic is correct:** A seeker in Chase that loses LoS does not immediately transition to Searching. It waits `chaseLostPatienceSeconds`. If LoS is reestablished within that window, the timer resets.
 - [ ] **AC-11 — No hardcoded values:** A code review finds zero numeric literals in `EnemyController`, `SeekerStateMachine`, or any Seeker AI script. All values reference fields on `EnemyData`.
@@ -472,6 +468,23 @@ The HUD does not display seeker state directly (Pillar 3 — the world communica
 | Searching | No additional HUD element. Noise indicator (`NoiseIndicatorUI`) remains active. |
 | Chase | Screen vignette or pulse effect indicating extreme danger (implementation TBD with UX designer). Must not occlude gameplay-critical screen areas. |
 | Caught | Full-screen transition to fail state; HUD replaced by `GameOverUI`. |
+
+---
+
+## Appendix A: Animator Parameter Reference
+
+The Seeker AI writes to the following Animator parameters each state transition. The Animator Controller on each seeker prefab must define these parameters exactly. The Seeker AI does not validate parameter existence at runtime — a missing parameter silently fails with no state change in the Animator.
+
+| Parameter Name | Type | Written By State | Value Written | Notes |
+|----------------|------|-----------------|---------------|-------|
+| `MoveSpeed` | Float | All states, every FixedUpdate | `NavMeshAgent.velocity.magnitude` | Drives the locomotion blend tree. 0 = idle/stationary. Written continuously, not just on transition. |
+| `AlertTrigger` | Trigger | Unaware → Alert | Set (consumed immediately) | Fires on entry to Alert. Consumed by the Animator on the first frame it is set. |
+| `SearchTrigger` | Trigger | Any → Searching | Set (consumed immediately) | Fires on entry to Searching regardless of prior state. |
+| `ChaseTrigger` | Trigger | Any → Chase | Set (consumed immediately) | Fires on entry to Chase regardless of prior state. |
+| `PatrolTrigger` | Trigger | Any → Unaware | Set (consumed immediately) | Fires on return to Unaware (resume patrol). Also set on level load when entering Unaware for the first time. |
+| `CaughtTrigger` | Trigger | Chase → Caught | Set (consumed immediately) | Fires once on entry to Caught. Not retriggered. The Animator owns the catch gesture animation length. |
+
+**Implementation note:** All trigger writes use `_animator.SetTrigger("ParameterName")`. Float write uses `_animator.SetFloat("MoveSpeed", velocity)` inside `FixedUpdate` in the active state's `Tick()`. The Seeker AI does not use `SetBool` for states — triggers are preferred because they self-clear, preventing stale state if a transition is missed.
 
 ---
 
