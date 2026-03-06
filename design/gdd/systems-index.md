@@ -72,7 +72,7 @@ The four pillars (The Room Has Rules / Silence Is a Tool / Legible Jeopardy / T
 
 | \# | System Name | Category | Priority | Status | Design Doc | Depends On |
 | - | - | - | - | - | - | - |
-| 25 | Footstep Audio (inferred) | Audio | MVP | Not Started | — | Player Noise Emitter, Sound Propagation Model |
+| 25 | Footstep Audio (inferred) | Audio | MVP | Approved | design/gdd/footstep-audio.md | Player Noise Emitter, Sound Propagation Model |
 | 26 | Seeker Audio (inferred) | Audio | Vertical Slice | Not Started | — | Seeker AI |
 | 27 | Adaptive Music (inferred) | Audio | Vertical Slice | Not Started | — | Detection System |
 
@@ -229,10 +229,10 @@ The four pillars (The Room Has Rules / Silence Is a Tool / Legible Jeopardy / T
 | Metric | Count |
 | - | - |
 | Total systems identified | 27 |
-| Design docs started | 14 |
-| Design docs reviewed | 14 |
-| Design docs approved | 14 |
-| MVP systems designed | 14 / 15 |
+| Design docs started | 15 |
+| Design docs reviewed | 15 |
+| Design docs approved | 15 |
+| MVP systems designed | 15 / 15 |
 | Vertical Slice systems designed | 0 / 8 |
 
 
