@@ -8,8 +8,8 @@ namespace HideAndSeek
     /// </summary>
     public class HidingSpot : MonoBehaviour
     {
-        [SerializeField] private HidingSpotData _data;
-        [SerializeField] private Transform _attachTransform;
+        [SerializeField] HidingSpotData _data;
+        [SerializeField] Transform _attachTransform;
 
         public Transform AttachTransform => _attachTransform;
         public float ConcealmentModifier => _data.concealmentModifier;
@@ -29,7 +29,7 @@ namespace HideAndSeek
             IsOccupied = false;
         }
 
-        private void OnEnable() => HidingSpotRegistry.Instance?.Register(this);
-        private void OnDisable() => HidingSpotRegistry.TryGetInstance()?.Unregister(this);
+        void OnEnable() => HidingSpotRegistry.Instance?.Register(this);
+        void OnDisable() => HidingSpotRegistry.TryGetInstance()?.Unregister(this);
     }
 }

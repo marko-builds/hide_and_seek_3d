@@ -8,13 +8,13 @@ namespace HideAndSeek
     /// </summary>
     public class TimerUI : MonoBehaviour
     {
-        [SerializeField] private RoundTimer _roundTimer;
-        [SerializeField] private TMP_Text _timerText;
+        [SerializeField] RoundTimer _roundTimer;
+        [SerializeField] TMP_Text _timerText;
 
-        private void OnEnable() => _roundTimer.OnTimerTick += HandleTimerTick;
-        private void OnDisable() => _roundTimer.OnTimerTick -= HandleTimerTick;
+        void OnEnable() => _roundTimer.OnTimerTick += HandleTimerTick;
+        void OnDisable() => _roundTimer.OnTimerTick -= HandleTimerTick;
 
-        private void HandleTimerTick(float remaining)
+        void HandleTimerTick(float remaining)
         {
             int minutes = (int)(remaining / 60f);
             int seconds = (int)(remaining % 60f);

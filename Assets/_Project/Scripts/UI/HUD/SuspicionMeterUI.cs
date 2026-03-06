@@ -8,12 +8,12 @@ namespace HideAndSeek
     /// </summary>
     public class SuspicionMeterUI : MonoBehaviour
     {
-        [SerializeField] private SuspicionMeter _suspicionMeter;
-        [SerializeField] private Slider _slider;
+        [SerializeField] SuspicionMeter _suspicionMeter;
+        [SerializeField] Slider _slider;
 
-        private void OnEnable() => _suspicionMeter.OnSuspicionChanged += HandleSuspicionChanged;
-        private void OnDisable() => _suspicionMeter.OnSuspicionChanged -= HandleSuspicionChanged;
+        void OnEnable() => _suspicionMeter.OnSuspicionChanged += HandleSuspicionChanged;
+        void OnDisable() => _suspicionMeter.OnSuspicionChanged -= HandleSuspicionChanged;
 
-        private void HandleSuspicionChanged(float value) => _slider.value = value;
+        void HandleSuspicionChanged(float value) => _slider.value = value;
     }
 }

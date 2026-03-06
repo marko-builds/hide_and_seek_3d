@@ -8,12 +8,12 @@ namespace HideAndSeek
     /// </summary>
     public class NoiseIndicatorUI : MonoBehaviour
     {
-        [SerializeField] private PlayerNoiseEmitter _noiseEmitter;
-        [SerializeField] private RectTransform _noiseRing;
-        [SerializeField] private CanvasGroup _canvasGroup;
-        [SerializeField] private float _maxScale = 2f;
+        [SerializeField] PlayerNoiseEmitter _noiseEmitter;
+        [SerializeField] RectTransform _noiseRing;
+        [SerializeField] CanvasGroup _canvasGroup;
+        [SerializeField] float _maxScale = 2f;
 
-        private void Update()
+        void Update()
         {
             float noise = _noiseEmitter.CurrentNoiseLevel;
             float scale = Mathf.Lerp(1f, _maxScale, noise);

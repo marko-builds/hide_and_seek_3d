@@ -28,7 +28,7 @@ namespace HideAndSeek
 
         // ── Inspector ─────────────────────────────────────────────────────────────
 
-        [SerializeField] private EnemyData _data;
+        [SerializeField] EnemyData _data;
 
         // ── Public State ──────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ namespace HideAndSeek
 
         // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-        private void Awake()
+        void Awake()
         {
             // Auto-wire from EnemyController if not assigned in Inspector
             if (_data == null && TryGetComponent<EnemyController>(out var controller))
@@ -58,10 +58,10 @@ namespace HideAndSeek
 
         // ── Runtime ───────────────────────────────────────────────────────────────
 
-        private float _detectionCooldownTimer;
-        private float _chaseNoInputTimer;   // Tracks consecutive no-LoS/no-audio seconds in Chase (F7)
-        private float _catchDwellTimer;     // Tracks time player has been within catch radius
-        private bool _caughtFired;
+        float _detectionCooldownTimer;
+        float _chaseNoInputTimer;   // Tracks consecutive no-LoS/no-audio seconds in Chase (F7)
+        float _catchDwellTimer;     // Tracks time player has been within catch radius
+        bool _caughtFired;
 
         // ── Public API ────────────────────────────────────────────────────────────
 
@@ -200,7 +200,7 @@ namespace HideAndSeek
 
         // ── Private ───────────────────────────────────────────────────────────────
 
-        private void EvaluateStateTransitions()
+        void EvaluateStateTransitions()
         {
             if (_caughtFired) return;
 
@@ -219,7 +219,7 @@ namespace HideAndSeek
         /// "A large audio spike from Unaware adding 45 points lands at 65 — directly in Searching").
         /// Downward transitions apply hysteresis: falling threshold is lower than rising threshold.
         /// </summary>
-        private SeekState ComputeTargetState()
+        SeekState ComputeTargetState()
         {
             // Upward: strict greater-than, highest threshold checked first so states are never skipped
             if (Suspicion > _data.chaseThreshold)
@@ -246,7 +246,7 @@ namespace HideAndSeek
             return SeekState.Unaware;
         }
 
-        private float GetDecayRateForState(SeekState state) => state switch
+        float GetDecayRateForState(SeekState state) => state switch
         {
             SeekState.Unaware   => _data.decayRateUnaware,
             SeekState.Alert     => _data.decayRateAlert,

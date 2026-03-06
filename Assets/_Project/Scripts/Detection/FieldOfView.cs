@@ -8,7 +8,7 @@ namespace HideAndSeek
     /// </summary>
     public class FieldOfView : MonoBehaviour
     {
-        [SerializeField] private EnemyData _data;
+        [SerializeField] EnemyData _data;
 
         /// <summary>
         /// Returns true if <paramref name="target"/> is within the FOV cone and within detection range.

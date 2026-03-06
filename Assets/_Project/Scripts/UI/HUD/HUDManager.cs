@@ -8,12 +8,12 @@ namespace HideAndSeek
     /// </summary>
     public class HUDManager : MonoBehaviour
     {
-        [SerializeField] private GameObject _hudRoot;
+        [SerializeField] GameObject _hudRoot;
 
-        private void OnEnable() => GameManager.Instance.OnGameStateChanged += HandleStateChanged;
-        private void OnDisable() => GameManager.Instance.OnGameStateChanged -= HandleStateChanged;
+        void OnEnable() => GameManager.Instance.OnGameStateChanged += HandleStateChanged;
+        void OnDisable() => GameManager.Instance.OnGameStateChanged -= HandleStateChanged;
 
-        private void HandleStateChanged(GameManager.GameState state)
+        void HandleStateChanged(GameManager.GameState state)
         {
             _hudRoot.SetActive(state == GameManager.GameState.Playing);
         }

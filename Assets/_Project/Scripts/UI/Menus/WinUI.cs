@@ -10,20 +10,20 @@ namespace HideAndSeek
     [RequireComponent(typeof(CanvasGroup))]
     public class WinUI : MonoBehaviour
     {
-        private CanvasGroup _canvasGroup;
+        CanvasGroup _canvasGroup;
 
-        private void Awake()
+        void Awake()
         {
             _canvasGroup = GetComponent<CanvasGroup>();
             SetVisible(false);
         }
 
-        private void OnEnable()  => GameManager.OnWin += Show;
-        private void OnDisable() => GameManager.OnWin -= Show;
+        void OnEnable()  => GameManager.OnWin += Show;
+        void OnDisable() => GameManager.OnWin -= Show;
 
-        private void Show() => SetVisible(true);
+        void Show() => SetVisible(true);
 
-        private void SetVisible(bool visible)
+        void SetVisible(bool visible)
         {
             _canvasGroup.alpha          = visible ? 1f : 0f;
             _canvasGroup.interactable   = visible;

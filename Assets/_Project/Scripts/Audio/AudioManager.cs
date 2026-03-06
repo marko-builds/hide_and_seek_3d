@@ -10,10 +10,10 @@ namespace HideAndSeek
     /// </summary>
     public class AudioManager : Singleton<AudioManager>
     {
-        [SerializeField] private SoundLibrary _library;
-        [SerializeField] private SoundEmitter _emitterPrefab;
+        [SerializeField] SoundLibrary _library;
+        [SerializeField] SoundEmitter _emitterPrefab;
 
-        private ObjectPool<SoundEmitter> _pool;
+        ObjectPool<SoundEmitter> _pool;
 
         protected override void OnEnable()
         {

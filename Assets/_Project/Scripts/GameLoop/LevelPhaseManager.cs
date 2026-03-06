@@ -15,7 +15,7 @@ namespace HideAndSeek
     /// </summary>
     public class LevelPhaseManager : MonoBehaviour
     {
-        [SerializeField] private EscalationProfile _escalationProfile;
+        [SerializeField] EscalationProfile _escalationProfile;
 
         /// <summary>
         /// Fires when the level phase changes. Static so UI/audio can subscribe without
@@ -25,25 +25,25 @@ namespace HideAndSeek
 
         public LevelPhase CurrentPhase { get; private set; } = LevelPhase.Phase1_Find;
 
-        private void Awake()
+        void Awake()
         {
             // Clear stale cross-scene subscribers
             OnPhaseChanged = null;
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             if (ObjectiveRegistry.Instance != null)
                 ObjectiveRegistry.Instance.OnAllObjectivesCollected += HandleAllObjectivesCollected;
         }
 
-        private void OnDisable()
+        void OnDisable()
         {
             if (ObjectiveRegistry.Instance != null)
                 ObjectiveRegistry.Instance.OnAllObjectivesCollected -= HandleAllObjectivesCollected;
         }
 
-        private void HandleAllObjectivesCollected()
+        void HandleAllObjectivesCollected()
         {
             if (CurrentPhase == LevelPhase.Phase2_Escape) return;
 
@@ -56,7 +56,7 @@ namespace HideAndSeek
             AudioManager.Instance?.Play(SoundID.Phase2Start);
         }
 
-        private void ApplyEscalationToSeekers()
+        void ApplyEscalationToSeekers()
         {
             if (_escalationProfile == null || SeekerRegistry.Instance == null) return;
 

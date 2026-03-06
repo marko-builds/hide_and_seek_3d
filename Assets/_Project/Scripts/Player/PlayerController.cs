@@ -24,11 +24,11 @@ namespace HideAndSeek
         public HidingSpot CurrentHidingSpot => Hiding.CurrentHidingSpot;
 
         // IDetectable
-        [SerializeField] private DetectionProfile _detectionProfile = new();
+        [SerializeField] DetectionProfile _detectionProfile = new();
         public DetectionProfile DetectionProfile => _detectionProfile;
         public void OnDetected() { /* TODO: raise caught event */ }
 
-        private void Awake()
+        void Awake()
         {
             InputHandler = GetComponent<PlayerInputHandler>();
             Movement = GetComponent<PlayerMovement>();

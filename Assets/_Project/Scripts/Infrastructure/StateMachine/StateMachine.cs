@@ -6,7 +6,7 @@ namespace HideAndSeek
     /// </summary>
     public class StateMachine
     {
-        private IState _currentState;
+        IState _currentState;
 
         public IState CurrentState => _currentState;
 

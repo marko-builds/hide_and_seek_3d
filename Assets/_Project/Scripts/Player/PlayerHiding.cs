@@ -12,10 +12,10 @@ namespace HideAndSeek
         public bool IsHidden { get; private set; }
         public HidingSpot CurrentHidingSpot { get; private set; }
 
-        private PlayerMovement _movement;
-        private Rigidbody _rigidbody;
+        PlayerMovement _movement;
+        Rigidbody _rigidbody;
 
-        private void Awake()
+        void Awake()
         {
             _movement = GetComponent<PlayerMovement>();
             _rigidbody = GetComponent<Rigidbody>();
