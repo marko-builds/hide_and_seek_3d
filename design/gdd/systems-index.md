@@ -35,7 +35,7 @@ The four pillars (The Room Has Rules / Silence Is a Tool / Legible Jeopardy / T
 | 9 | Hiding Spot System | Gameplay | MVP | Approved | design/gdd/hiding-spot-system.md | Player Interaction System, Detection System |
 | 10 | Objective System | Gameplay | MVP | Approved | design/gdd/objective-system.md | Player Interaction System |
 | 11 | Level Exit System | Gameplay | MVP | Approved | design/gdd/level-exit-system.md | Objective System, Seeker AI |
-| 12 | Two-Phase Level Structure (inferred) | Gameplay | MVP | Not Started | — | Objective System, Level Exit System, Seeker AI |
+| 12 | Two-Phase Level Structure | Gameplay | MVP | Approved | design/gdd/two-phase-level-structure.md | Objective System, Level Exit System, Seeker AI |
 | 13 | Environmental Interaction | Gameplay | Vertical Slice | Not Started | — | Player Interaction System, Light Source System, Sound Propagation Model |
 | 14 | Stealth Toolkit / Gadgets | Gameplay | Vertical Slice | Not Started | — | Player Interaction System, Gadget Inventory |
 | 15 | Puzzle Gate System | Gameplay | Alpha | Not Started | — | Environmental Interaction, Player Interaction System |
@@ -229,10 +229,10 @@ The four pillars (The Room Has Rules / Silence Is a Tool / Legible Jeopardy / T
 | Metric | Count |
 | - | - |
 | Total systems identified | 27 |
-| Design docs started | 9 |
-| Design docs reviewed | 10 |
-| Design docs approved | 10 |
-| MVP systems designed | 10 / 15 |
+| Design docs started | 11 |
+| Design docs reviewed | 11 |
+| Design docs approved | 11 |
+| MVP systems designed | 11 / 15 |
 | Vertical Slice systems designed | 0 / 8 |
 
 
