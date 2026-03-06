@@ -3,56 +3,115 @@ using UnityEngine;
 namespace HideAndSeek
 {
     /// <summary>
-    /// Enemy walks a waypoint loop. Transitions to InvestigateState when noise or
-    /// partial sight raises suspicion above a threshold.
+    /// Enemy walks a waypoint loop at patrol speed.
+    ///
+    /// When constructed with <paramref name="resumeAtNearest"/> = true (after Search),
+    /// starts at the waypoint closest to the seeker's current position (F-S1).
+    ///
+    /// Transitions:
+    ///   suspicion >= Chase  → EnemyChaseState
+    ///   suspicion >= Alert  → EnemyAlertState
+    ///   noise received      → EnemyAlertState (toward noise position)
     /// </summary>
     public class EnemyPatrolState : BaseState
     {
         private readonly EnemyController _enemy;
+        private readonly bool _resumeAtNearest;
         private int _waypointIndex;
+        private float _dwellTimer;
+        private bool _dwelling;
 
-        public EnemyPatrolState(EnemyController enemy) => _enemy = enemy;
+        public EnemyPatrolState(EnemyController enemy, bool resumeAtNearest = false)
+        {
+            _enemy = enemy;
+            _resumeAtNearest = resumeAtNearest;
+        }
 
         public override void Enter()
         {
-            _enemy.Navigation.SetSpeed(_enemy.Data.patrolSpeed);
+            _enemy.Navigation.SetSpeed(_enemy.Data.patrolSpeed * _enemy.Phase2SpeedMultiplier);
+            _dwelling = false;
+            _dwellTimer = 0f;
+
+            if (!HasWaypoints()) return;
+
+            _waypointIndex = _resumeAtNearest
+                ? FindNearestWaypointIndex()
+                : 0;
+
             GoToCurrentWaypoint();
         }
 
         public override void Tick()
         {
-            float suspicion = _enemy.Detection.SuspicionMeter.Suspicion;
+            SeekState state = _enemy.Detection.SuspicionMeter.State;
 
-            if (suspicion >= 1f)
+            if (state >= SeekState.Chase)
             {
                 _enemy.ChangeState(new EnemyChaseState(_enemy));
                 return;
             }
 
-            if (suspicion >= _enemy.Data.investigateSuspicionThreshold)
+            if (state >= SeekState.Alert)
             {
-                _enemy.ChangeState(new EnemyInvestigateState(_enemy, _enemy.Detection.LastKnownPlayerPosition));
+                _enemy.ChangeState(new EnemyAlertState(_enemy));
                 return;
             }
 
-            if (_enemy.Detection.ConsumePendingNoise(out Vector3 noisePos))
+            if (_enemy.Detection.ConsumePendingNoise(out _))
             {
-                _enemy.ChangeState(new EnemyInvestigateState(_enemy, noisePos));
+                _enemy.ChangeState(new EnemyAlertState(_enemy));
                 return;
             }
 
-            if (!HasWaypoints() || !_enemy.Navigation.IsAtDestination) return;
-            _waypointIndex = (_waypointIndex + 1) % _enemy.Waypoints.Length;
-            
-            GoToCurrentWaypoint();
+            if (!HasWaypoints()) return;
+
+            if (_dwelling)
+            {
+                _dwellTimer -= Time.deltaTime;
+                if (_dwellTimer <= 0f)
+                {
+                    _dwelling = false;
+                    _waypointIndex = (_waypointIndex + 1) % _enemy.Waypoints.Length;
+                    GoToCurrentWaypoint();
+                }
+                return;
+            }
+
+            if (!_enemy.Navigation.IsNear(
+                    _enemy.Waypoints[_waypointIndex].position,
+                    _enemy.Data.waypointArrivalThreshold)) return;
+
+            // Arrived — dwell then advance
+            _dwelling = true;
+            _dwellTimer = _enemy.Data.patrolDwellDuration;
         }
 
         private void GoToCurrentWaypoint()
         {
-            if (HasWaypoints())
-                _enemy.Navigation.SetDestination(_enemy.Waypoints[_waypointIndex].position);
+            _enemy.Navigation.SetDestination(_enemy.Waypoints[_waypointIndex].position);
         }
 
-        private bool HasWaypoints() => _enemy.Waypoints is { Length: > 0 };
+        private bool HasWaypoints()
+        {
+            if (_enemy.Waypoints is { Length: > 0 }) return true;
+            Debug.LogWarning($"[EnemyPatrolState] {_enemy.name} has no patrol waypoints.", _enemy);
+            return false;
+        }
+
+        /// <summary>Returns the index of the waypoint nearest to the seeker (F-S1).</summary>
+        private int FindNearestWaypointIndex()
+        {
+            var waypoints = _enemy.Waypoints;
+            Vector3 pos = _enemy.transform.position;
+            int best = 0;
+            float bestDist = Vector3.SqrMagnitude(waypoints[0].position - pos);
+            for (int i = 1; i < waypoints.Length; i++)
+            {
+                float d = Vector3.SqrMagnitude(waypoints[i].position - pos);
+                if (d < bestDist) { bestDist = d; best = i; }
+            }
+            return best;
+        }
     }
 }

@@ -3,44 +3,54 @@ using UnityEngine;
 namespace HideAndSeek
 {
     /// <summary>
-    /// Enemy pursues the player at full speed. Triggers the lose condition on catch.
-    /// Transitions to SearchState if the player leaves sight for too long.
+    /// Enemy pursues the player at chase speed (GDD §3.5).
+    ///
+    /// NavMesh destination is updated every chaseNavUpdateInterval seconds to limit
+    /// path recalculation cost (GDD AC-14).
+    ///
+    /// The catch is handled by SuspicionMeter.OnPlayerCaught via the catchDwellTime
+    /// check — this state does not perform a separate distance test.
+    ///
+    /// Transitions:
+    ///   suspicion drops below Chase threshold → EnemySearchState (via SuspicionMeter hysteresis)
+    ///   suspicion >= Searching but < Chase    → EnemySearchState
     /// </summary>
     public class EnemyChaseState : BaseState
     {
         private readonly EnemyController _enemy;
-        private float _lostSightTimer;
+        private float _navUpdateTimer;
 
         public EnemyChaseState(EnemyController enemy) => _enemy = enemy;
 
         public override void Enter()
         {
-            _enemy.Navigation.SetSpeed(_enemy.Data.chaseSpeed);
-            _lostSightTimer = 0f;
+            float speed = _enemy.Data.patrolSpeed
+                          * _enemy.Data.chaseSpeedMultiplier
+                          * _enemy.Phase2SpeedMultiplier;
+            _enemy.Navigation.SetSpeed(speed);
+            _navUpdateTimer = 0f;
+
+            // Immediately move toward last known position on enter
+            _enemy.Navigation.SetDestination(_enemy.Detection.LastKnownPlayerPosition);
         }
 
         public override void Tick()
         {
-            if (_enemy.Detection.PlayerVisible)
+            SeekState state = _enemy.Detection.SuspicionMeter.State;
+
+            // SuspicionMeter hysteresis has dropped us out of Chase
+            if (state < SeekState.Chase)
             {
-                _lostSightTimer = 0f;
-                _enemy.Navigation.SetDestination(_enemy.Detection.LastKnownPlayerPosition);
-
-                float dist = Vector3.Distance(
-                    _enemy.transform.position,
-                    _enemy.Detection.Player.position);
-
-                if (dist <= _enemy.Data.catchDistance)
-                {
-                    _enemy.NotifyPlayerCaught();
-                    return;
-                }
+                _enemy.ChangeState(new EnemySearchState(_enemy, _enemy.Detection.LastKnownPlayerPosition));
+                return;
             }
-            else
+
+            // Throttled nav update
+            _navUpdateTimer -= Time.deltaTime;
+            if (_navUpdateTimer <= 0f)
             {
-                _lostSightTimer += Time.deltaTime;
-                if (_lostSightTimer >= _enemy.Data.lostSightDuration)
-                    _enemy.ChangeState(new EnemySearchState(_enemy, _enemy.Detection.LastKnownPlayerPosition));
+                _navUpdateTimer = _enemy.Data.chaseNavUpdateInterval;
+                _enemy.Navigation.SetDestination(_enemy.Detection.LastKnownPlayerPosition);
             }
         }
     }

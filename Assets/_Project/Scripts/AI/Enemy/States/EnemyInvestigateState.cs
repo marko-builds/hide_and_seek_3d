@@ -29,7 +29,7 @@ namespace HideAndSeek
 
         public override void Tick()
         {
-            if (_enemy.Detection.SuspicionMeter.Suspicion >= 1f)
+            if (_enemy.Detection.SuspicionMeter.State >= SeekState.Chase)
             {
                 _enemy.ChangeState(new EnemyChaseState(_enemy));
                 return;

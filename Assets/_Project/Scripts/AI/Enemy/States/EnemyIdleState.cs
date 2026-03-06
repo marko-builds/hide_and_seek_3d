@@ -3,7 +3,8 @@ using UnityEngine;
 namespace HideAndSeek
 {
     /// <summary>
-    /// Enemy stands still and waits. Transitions to PatrolState after the idle timer elapses.
+    /// Enemy stands still at spawn. Transitions to PatrolState after idleWaitDuration.
+    /// Escalates immediately on stimuli.
     /// </summary>
     public class EnemyIdleState : BaseState
     {
@@ -20,23 +21,23 @@ namespace HideAndSeek
 
         public override void Tick()
         {
-            float suspicion = _enemy.Detection.SuspicionMeter.Suspicion;
+            SeekState state = _enemy.Detection.SuspicionMeter.State;
 
-            if (suspicion >= 1f)
+            if (state >= SeekState.Chase)
             {
                 _enemy.ChangeState(new EnemyChaseState(_enemy));
                 return;
             }
 
-            if (suspicion >= _enemy.Data.investigateSuspicionThreshold)
+            if (state >= SeekState.Alert)
             {
-                _enemy.ChangeState(new EnemyInvestigateState(_enemy, _enemy.Detection.LastKnownPlayerPosition));
+                _enemy.ChangeState(new EnemyAlertState(_enemy));
                 return;
             }
 
-            if (_enemy.Detection.ConsumePendingNoise(out Vector3 noisePos))
+            if (_enemy.Detection.ConsumePendingNoise(out _))
             {
-                _enemy.ChangeState(new EnemyInvestigateState(_enemy, noisePos));
+                _enemy.ChangeState(new EnemyAlertState(_enemy));
                 return;
             }
 

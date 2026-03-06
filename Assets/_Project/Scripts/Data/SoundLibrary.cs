@@ -18,6 +18,16 @@ namespace HideAndSeek
         EnemyChase,
         EnemyLostTarget,
 
+        // Objective
+        ObjectiveCollect,
+
+        // Level Exit
+        ExitUnlocked,
+        ExitUsed,
+
+        // Phase Transition
+        Phase2Start,
+
         // UI / Game
         RoundStart,
         RoundWin,

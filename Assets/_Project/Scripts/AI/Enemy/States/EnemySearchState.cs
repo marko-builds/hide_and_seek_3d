@@ -3,62 +3,211 @@ using UnityEngine;
 namespace HideAndSeek
 {
     /// <summary>
-    /// Enemy sweeps the area after losing sight of the player.
-    /// Returns to PatrolState after the search timeout elapses.
+    /// Two-phase search after losing the player (GDD §3.4):
+    ///
+    /// Phase 1 — MovingToLKP: Navigate to lastKnownPosition.
+    /// Phase 2 — Sweeping: N equidistant facing directions from current forward,
+    ///   rotating at searchTurnSpeed and holding each for sweepHoldDuration.
+    ///   After the sweep, check up to searchWaypointCount nearby patrol waypoints
+    ///   before returning to Patrol.
+    ///
+    /// A new noise event during Phase 2 restarts Phase 1 toward the noise position.
+    /// Escalates to ChaseState if suspicion hits Chase threshold at any time.
+    /// Descends to AlertState if suspicion drops back to Alert range.
     /// </summary>
     public class EnemySearchState : BaseState
     {
         private readonly EnemyController _enemy;
-        private readonly Vector3 _lastKnownPosition;
-        private Vector3[] _sweepPoints;
-        private int _sweepIndex;
-        private float _timer;
+        private Vector3 _searchTarget;
+
+        // Phase tracking
+        private enum Phase { MovingToLKP, Sweeping, CheckingWaypoints }
+        private Phase _phase;
+
+        // Sweep
+        private int _sweepStep;
+        private float _sweepHoldTimer;
+        private Vector3 _sweepStartForward;
+
+        // Nearby waypoint check
+        private int[] _nearbyWaypointIndices;
+        private int _waypointCheckIndex;
 
         public EnemySearchState(EnemyController enemy, Vector3 lastKnownPosition)
         {
             _enemy = enemy;
-            _lastKnownPosition = lastKnownPosition;
+            _searchTarget = lastKnownPosition;
         }
 
         public override void Enter()
         {
-            _timer = _enemy.Data.searchTimeout;
-            _enemy.Navigation.SetSpeed(_enemy.Data.investigateSpeed);
+            float speed = _enemy.Data.patrolSpeed
+                          * _enemy.Data.searchSpeedMultiplier
+                          * _enemy.Phase2SpeedMultiplier;
+            _enemy.Navigation.SetSpeed(speed);
 
-            int count = _enemy.Data.searchSweepCount;
-            float radius = _enemy.Data.searchSweepRadius;
-            _sweepPoints = new Vector3[count];
-            for (int i = 0; i < count; i++)
-            {
-                Vector2 circle = Random.insideUnitCircle * radius;
-                _sweepPoints[i] = _lastKnownPosition + new Vector3(circle.x, 0f, circle.y);
-            }
-
-            _sweepIndex = 0;
-            _enemy.Navigation.SetDestination(_sweepPoints[0]);
+            StartMoveToTarget(_searchTarget);
         }
 
         public override void Tick()
         {
-            if (_enemy.Detection.SuspicionMeter.Suspicion >= 1f)
+            SeekState seekState = _enemy.Detection.SuspicionMeter.State;
+
+            if (seekState >= SeekState.Chase)
             {
                 _enemy.ChangeState(new EnemyChaseState(_enemy));
                 return;
             }
 
-            _timer -= Time.deltaTime;
-            if (_timer <= 0f)
+            // New noise restarts Phase 1 toward noise position
+            if (_enemy.Detection.ConsumePendingNoise(out Vector3 noisePos))
             {
-                _enemy.Detection.SuspicionMeter.Reset();
-                _enemy.ChangeState(new EnemyPatrolState(_enemy));
+                _searchTarget = noisePos;
+                StartMoveToTarget(_searchTarget);
                 return;
             }
 
-            if (_enemy.Navigation.IsAtDestination)
+            switch (_phase)
             {
-                _sweepIndex = (_sweepIndex + 1) % _sweepPoints.Length;
-                _enemy.Navigation.SetDestination(_sweepPoints[_sweepIndex]);
+                case Phase.MovingToLKP:
+                    TickMovingToLKP();
+                    break;
+                case Phase.Sweeping:
+                    TickSweeping();
+                    break;
+                case Phase.CheckingWaypoints:
+                    TickCheckingWaypoints();
+                    break;
             }
+        }
+
+        // ── Phase 1 ───────────────────────────────────────────────────────────────
+
+        private void StartMoveToTarget(Vector3 target)
+        {
+            _phase = Phase.MovingToLKP;
+            _enemy.Navigation.SetDestination(target);
+        }
+
+        private void TickMovingToLKP()
+        {
+            if (_enemy.Navigation.IsNear(_searchTarget, _enemy.Data.waypointArrivalThreshold))
+                StartSweep();
+        }
+
+        // ── Phase 2 — Directional Sweep ───────────────────────────────────────────
+
+        private void StartSweep()
+        {
+            _phase = Phase.Sweeping;
+            _sweepStep = 0;
+            _sweepHoldTimer = _enemy.Data.sweepHoldDuration;
+            _sweepStartForward = _enemy.transform.forward;
+            _enemy.Navigation.Stop();
+        }
+
+        private void TickSweeping()
+        {
+            _sweepHoldTimer -= Time.deltaTime;
+            if (_sweepHoldTimer > 0f)
+            {
+                // Rotate toward the current sweep direction
+                Vector3 dir = SweepDirection(_sweepStep);
+                _enemy.Navigation.RotateToward(
+                    _enemy.transform.position + dir,
+                    _enemy.Data.searchTurnSpeed);
+                return;
+            }
+
+            _sweepStep++;
+            if (_sweepStep >= _enemy.Data.searchSweepDirectionCount)
+            {
+                StartWaypointCheck();
+                return;
+            }
+
+            _sweepHoldTimer = _enemy.Data.sweepHoldDuration;
+        }
+
+        /// <summary>Returns the world-space direction for sweep step <paramref name="step"/>.</summary>
+        private Vector3 SweepDirection(int step)
+        {
+            float angleDeg = step * (360f / _enemy.Data.searchSweepDirectionCount);
+            return Quaternion.AngleAxis(angleDeg, Vector3.up) * _sweepStartForward;
+        }
+
+        // ── Phase 3 — Waypoint Check ──────────────────────────────────────────────
+
+        private void StartWaypointCheck()
+        {
+            _phase = Phase.CheckingWaypoints;
+            _waypointCheckIndex = 0;
+            _nearbyWaypointIndices = FindNearestWaypointIndices(_enemy.Data.searchWaypointCount);
+
+            if (_nearbyWaypointIndices.Length == 0)
+            {
+                FinishSearch();
+                return;
+            }
+
+            _enemy.Navigation.SetDestination(_enemy.Waypoints[_nearbyWaypointIndices[0]].position);
+        }
+
+        private void TickCheckingWaypoints()
+        {
+            if (_waypointCheckIndex >= _nearbyWaypointIndices.Length)
+            {
+                FinishSearch();
+                return;
+            }
+
+            Vector3 dest = _enemy.Waypoints[_nearbyWaypointIndices[_waypointCheckIndex]].position;
+            if (!_enemy.Navigation.IsNear(dest, _enemy.Data.waypointArrivalThreshold)) return;
+
+            _waypointCheckIndex++;
+            if (_waypointCheckIndex < _nearbyWaypointIndices.Length)
+                _enemy.Navigation.SetDestination(_enemy.Waypoints[_nearbyWaypointIndices[_waypointCheckIndex]].position);
+        }
+
+        private void FinishSearch()
+        {
+            _enemy.Detection.SuspicionMeter.Reset();
+            _enemy.ChangeState(new EnemyPatrolState(_enemy, resumeAtNearest: true));
+        }
+
+        // ── Helpers ───────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns the indices of the <paramref name="count"/> nearest waypoints to the seeker,
+        /// sorted by ascending distance (F-S1).
+        /// </summary>
+        private int[] FindNearestWaypointIndices(int count)
+        {
+            var waypoints = _enemy.Waypoints;
+            if (waypoints == null || waypoints.Length == 0)
+                return System.Array.Empty<int>();
+
+            count = Mathf.Min(count, waypoints.Length);
+            int[] indices = new int[waypoints.Length];
+            for (int i = 0; i < waypoints.Length; i++) indices[i] = i;
+
+            // Partial insertion sort: move the 'count' smallest to the front
+            Vector3 pos = _enemy.transform.position;
+            for (int i = 0; i < count; i++)
+            {
+                int minIdx = i;
+                float minDist = Vector3.SqrMagnitude(waypoints[indices[i]].position - pos);
+                for (int j = i + 1; j < indices.Length; j++)
+                {
+                    float d = Vector3.SqrMagnitude(waypoints[indices[j]].position - pos);
+                    if (d < minDist) { minDist = d; minIdx = j; }
+                }
+                (indices[i], indices[minIdx]) = (indices[minIdx], indices[i]);
+            }
+
+            int[] result = new int[count];
+            System.Array.Copy(indices, result, count);
+            return result;
         }
     }
 }
