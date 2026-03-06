@@ -61,7 +61,7 @@ The four pillars (The Room Has Rules / Silence Is a Tool / Legible Jeopardy / T
 
 | \# | System Name | Category | Priority | Status | Design Doc | Depends On |
 | - | - | - | - | - | - | - |
-| 20 | HUD (inferred) | UI | MVP | Not Started | — | Detection System, Player Noise Emitter, Gadget Inventory |
+| 20 | HUD (inferred) | UI | MVP | Approved | design/gdd/hud.md | Detection System, Player Noise Emitter, Gadget Inventory, Objective System, Two-Phase Level Structure, Seeker AI, Checkpoint System |
 | 21 | Win / Game Over Screens | UI | MVP | Not Started | — | Two-Phase Level Structure |
 | 22 | Detection Event Feedback UI (inferred) | UI | Vertical Slice | Not Started | — | Detection System, Seeker AI |
 | 23 | Level Complete Screen (inferred) | UI | Vertical Slice | Not Started | — | Level Timer + Stats |
@@ -229,10 +229,10 @@ The four pillars (The Room Has Rules / Silence Is a Tool / Legible Jeopardy / T
 | Metric | Count |
 | - | - |
 | Total systems identified | 27 |
-| Design docs started | 12 |
-| Design docs reviewed | 12 |
-| Design docs approved | 12 |
-| MVP systems designed | 12 / 15 |
+| Design docs started | 13 |
+| Design docs reviewed | 13 |
+| Design docs approved | 13 |
+| MVP systems designed | 13 / 15 |
 | Vertical Slice systems designed | 0 / 8 |
 
 
