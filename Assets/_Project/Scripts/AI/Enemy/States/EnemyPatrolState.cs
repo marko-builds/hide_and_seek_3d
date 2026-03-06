@@ -15,11 +15,11 @@ namespace HideAndSeek
     /// </summary>
     public class EnemyPatrolState : BaseState
     {
-        private readonly EnemyController _enemy;
-        private readonly bool _resumeAtNearest;
-        private int _waypointIndex;
-        private float _dwellTimer;
-        private bool _dwelling;
+        readonly EnemyController _enemy;
+        readonly bool _resumeAtNearest;
+        int _waypointIndex;
+        float _dwellTimer;
+        bool _dwelling;
 
         public EnemyPatrolState(EnemyController enemy, bool resumeAtNearest = false)
         {
@@ -87,12 +87,12 @@ namespace HideAndSeek
             _dwellTimer = _enemy.Data.patrolDwellDuration;
         }
 
-        private void GoToCurrentWaypoint()
+        void GoToCurrentWaypoint()
         {
             _enemy.Navigation.SetDestination(_enemy.Waypoints[_waypointIndex].position);
         }
 
-        private bool HasWaypoints()
+        bool HasWaypoints()
         {
             if (_enemy.Waypoints is { Length: > 0 }) return true;
             Debug.LogWarning($"[EnemyPatrolState] {_enemy.name} has no patrol waypoints.", _enemy);
@@ -100,7 +100,7 @@ namespace HideAndSeek
         }
 
         /// <summary>Returns the index of the waypoint nearest to the seeker (F-S1).</summary>
-        private int FindNearestWaypointIndex()
+        int FindNearestWaypointIndex()
         {
             var waypoints = _enemy.Waypoints;
             Vector3 pos = _enemy.transform.position;

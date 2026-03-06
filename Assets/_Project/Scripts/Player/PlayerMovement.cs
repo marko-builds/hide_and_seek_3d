@@ -11,20 +11,20 @@ namespace HideAndSeek
     public class PlayerMovement : MonoBehaviour
     {
         // Inspector
-        [SerializeField] private PlayerData _data;
-        [SerializeField] private Camera _camera;   // Assign Main Camera (has CinemachineBrain)
+        [SerializeField] PlayerData _data;
+        [SerializeField] Camera _camera;   // Assign Main Camera (has CinemachineBrain)
 
         // Cached references (set in Awake)
-        private Rigidbody _rigidbody;
-        private PlayerInputHandler _input;
+        Rigidbody _rigidbody;
+        PlayerInputHandler _input;
 
         // Runtime state — written by event handlers, read in FixedUpdate; no per-frame allocation
-        private Vector2 _moveInput;
-        private bool _isSprinting;
-        private bool _isCrouching;
-        private Vector3 _currentVelocity;   // XZ smoothed velocity; Y from gravity preserved separately
+        Vector2 _moveInput;
+        bool _isSprinting;
+        bool _isCrouching;
+        Vector3 _currentVelocity;   // XZ smoothed velocity; Y from gravity preserved separately
 
-        private const float MovingThreshold = 0.001f;
+        const float MovingThreshold = 0.001f;
 
         // ── Public API ────────────────────────────────────────────────────────────
 
@@ -39,13 +39,13 @@ namespace HideAndSeek
 
         // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-        private void Awake()
+        void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
             _input = GetComponent<PlayerInputHandler>();
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             _input.OnMove += HandleMove;
             _input.OnSprintStarted += HandleSprintStarted;
@@ -54,7 +54,7 @@ namespace HideAndSeek
             _input.OnCrouchCancelled += HandleCrouchCancelled;
         }
 
-        private void OnDisable()
+        void OnDisable()
         {
             _input.OnMove -= HandleMove;
             _input.OnSprintStarted -= HandleSprintStarted;
@@ -63,7 +63,7 @@ namespace HideAndSeek
             _input.OnCrouchCancelled -= HandleCrouchCancelled;
         }
 
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             Vector3 desiredVelocity = ComputeDesiredVelocity();
             SmoothVelocity(desiredVelocity);
@@ -73,7 +73,7 @@ namespace HideAndSeek
 
         // ── Private Methods ───────────────────────────────────────────────────────
 
-        private Vector3 ComputeDesiredVelocity()
+        Vector3 ComputeDesiredVelocity()
         {
             if (_moveInput.sqrMagnitude < MovingThreshold)
                 return Vector3.zero;
@@ -100,7 +100,7 @@ namespace HideAndSeek
             return direction * speed;
         }
 
-        private void SmoothVelocity(Vector3 desiredVelocity)
+        void SmoothVelocity(Vector3 desiredVelocity)
         {
             // Accelerate when gaining speed, decelerate when losing it
             float rate = desiredVelocity.sqrMagnitude > _currentVelocity.sqrMagnitude
@@ -111,14 +111,14 @@ namespace HideAndSeek
             _currentVelocity = Vector3.MoveTowards(_currentVelocity, desiredVelocity, rate * Time.fixedDeltaTime);
         }
 
-        private void ApplyVelocityToRigidbody()
+        void ApplyVelocityToRigidbody()
         {
             // Preserve Y so gravity accumulates normally; only drive XZ from locomotion
             float yVelocity = _rigidbody.linearVelocity.y;
             _rigidbody.linearVelocity = new Vector3(_currentVelocity.x, yVelocity, _currentVelocity.z);
         }
 
-        private void RotateTowardMovementDirection()
+        void RotateTowardMovementDirection()
         {
             // Early-out prevents LookRotation(zero) error and snap-to-forward when stopping
             if (_currentVelocity.sqrMagnitude < MovingThreshold)
@@ -134,16 +134,16 @@ namespace HideAndSeek
 
         // ── Input Event Handlers ──────────────────────────────────────────────────
 
-        private void HandleMove(Vector2 input) => _moveInput = input;
+        void HandleMove(Vector2 input) => _moveInput = input;
 
-        private void HandleSprintStarted()
+        void HandleSprintStarted()
         {
             if (_isCrouching) return;   // Crouch takes priority; can't sprint while crouching
             _isSprinting = true;
         }
 
-        private void HandleSprintCancelled() => _isSprinting = false;
-        private void HandleCrouchStarted()   => _isCrouching = true;
-        private void HandleCrouchCancelled() => _isCrouching = false;
+        void HandleSprintCancelled() => _isSprinting = false;
+        void HandleCrouchStarted()   => _isCrouching = true;
+        void HandleCrouchCancelled() => _isCrouching = false;
     }
 }

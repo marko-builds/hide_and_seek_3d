@@ -8,10 +8,10 @@ namespace HideAndSeek
     /// </summary>
     public class EnemyInvestigateState : BaseState
     {
-        private readonly EnemyController _enemy;
-        private readonly Vector3 _targetPosition;
-        private float _lookTimer;
-        private bool _arrived;
+        readonly EnemyController _enemy;
+        readonly Vector3 _targetPosition;
+        float _lookTimer;
+        bool _arrived;
 
         public EnemyInvestigateState(EnemyController enemy, Vector3 targetPosition)
         {

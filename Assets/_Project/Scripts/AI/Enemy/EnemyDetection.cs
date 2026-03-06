@@ -17,8 +17,8 @@ namespace HideAndSeek
     [RequireComponent(typeof(SuspicionMeter))]
     public class EnemyDetection : MonoBehaviour
     {
-        [SerializeField] private LayerMask _obstructionMask;
-        [SerializeField] private Transform _player;
+        [SerializeField] LayerMask _obstructionMask;
+        [SerializeField] Transform _player;
 
         // ── Public API ────────────────────────────────────────────────────────────
 
@@ -40,21 +40,21 @@ namespace HideAndSeek
 
         // ── Private ───────────────────────────────────────────────────────────────
 
-        private NoiseListener _noiseListener;
-        private EnemyData _data;
-        private IHideable _playerHideable;
-        private IDetectable _playerDetectable;
-        private PlayerMovement _playerMovement;
+        NoiseListener _noiseListener;
+        EnemyData _data;
+        IHideable _playerHideable;
+        IDetectable _playerDetectable;
+        PlayerMovement _playerMovement;
 
-        private bool _playerVisible;
-        private bool _noisePending;
-        private Vector3 _lastHeardNoisePosition;
-        private Vector3 _lastKnownPlayerPosition;
-        private bool _wasPlayerVisible;
+        bool _playerVisible;
+        bool _noisePending;
+        Vector3 _lastHeardNoisePosition;
+        Vector3 _lastKnownPlayerPosition;
+        bool _wasPlayerVisible;
 
         // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-        private void Awake()
+        void Awake()
         {
             _noiseListener  = GetComponent<NoiseListener>();
             SuspicionMeter  = GetComponent<SuspicionMeter>();
@@ -71,17 +71,17 @@ namespace HideAndSeek
             SuspicionMeter.OnStateChanged += HandleSuspicionStateChanged;
         }
 
-        private void OnDestroy()
+        void OnDestroy()
         {
             SuspicionMeter.OnStateChanged -= HandleSuspicionStateChanged;
         }
 
-        private void OnEnable()  => _noiseListener.OnNoiseHeard += HandleNoiseHeard;
-        private void OnDisable() => _noiseListener.OnNoiseHeard -= HandleNoiseHeard;
+        void OnEnable()  => _noiseListener.OnNoiseHeard += HandleNoiseHeard;
+        void OnDisable() => _noiseListener.OnNoiseHeard -= HandleNoiseHeard;
 
         // ── Detection per physics step ────────────────────────────────────────────
 
-        private void FixedUpdate()
+        void FixedUpdate()
         {
             if (_player == null) return;
 
@@ -171,7 +171,7 @@ namespace HideAndSeek
         /// GDD F2 — visual suspicion delta in points/sec.
         /// light_factor = 1.0 (first pass; Light Source System is a P3 task).
         /// </summary>
-        private float ComputeVisualDelta(float distance, float angleToPlayer)
+        float ComputeVisualDelta(float distance, float angleToPlayer)
         {
             float maxRange = _data.detectionRange;
             float halfFov  = _data.fieldOfViewAngle * 0.5f;
@@ -197,7 +197,7 @@ namespace HideAndSeek
                    * stateMultiplier;
         }
 
-        private void HandleSuspicionStateChanged(SeekState prev, SeekState next)
+        void HandleSuspicionStateChanged(SeekState prev, SeekState next)
         {
             // Translate state transitions into the legacy events EnemyChaseState depends on
             if (next >= SeekState.Chase && prev < SeekState.Chase)
@@ -207,7 +207,7 @@ namespace HideAndSeek
                 OnPlayerLost?.Invoke();
         }
 
-        private void HandleNoiseHeard(NoiseEvent noiseEvent)
+        void HandleNoiseHeard(NoiseEvent noiseEvent)
         {
             // Audio spike is deferred to task 1.2; store position for Investigate transitions
             _lastHeardNoisePosition = noiseEvent.WorldPosition;

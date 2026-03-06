@@ -35,8 +35,8 @@ namespace HideAndSeek
 
         // ── Registration ─────────────────────────────────────────────────────────
 
-        private readonly List<ObjectiveToken> _tokens = new();
-        private bool _registrationClosed;
+        readonly List<ObjectiveToken> _tokens = new();
+        bool _registrationClosed;
 
         /// <summary>Called by ObjectiveToken.Awake. Ignored after Start().</summary>
         public void Register(ObjectiveToken token)
@@ -71,7 +71,7 @@ namespace HideAndSeek
 
         // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-        private void Start()
+        void Start()
         {
             _registrationClosed = true;
             TotalCount = _tokens.Count;

@@ -8,12 +8,12 @@ namespace HideAndSeek
     /// </summary>
     public class LoseConditionEvaluator : MonoBehaviour
     {
-        private void Start()
+        void Start()
         {
             foreach (var enemy in FindObjectsByType<EnemyController>(FindObjectsSortMode.None))
                 enemy.OnPlayerCaught += HandlePlayerCaught;
         }
 
-        private void HandlePlayerCaught() => GameManager.Instance.TriggerLose();
+        void HandlePlayerCaught() => GameManager.Instance.TriggerLose();
     }
 }

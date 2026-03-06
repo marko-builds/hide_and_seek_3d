@@ -8,11 +8,11 @@ namespace HideAndSeek
     /// </summary>
     public class WinConditionEvaluator : MonoBehaviour
     {
-        [SerializeField] private RoundTimer _roundTimer;
+        [SerializeField] RoundTimer _roundTimer;
 
-        private void OnEnable() => _roundTimer.OnTimerExpired += HandleTimerExpired;
-        private void OnDisable() => _roundTimer.OnTimerExpired -= HandleTimerExpired;
+        void OnEnable() => _roundTimer.OnTimerExpired += HandleTimerExpired;
+        void OnDisable() => _roundTimer.OnTimerExpired -= HandleTimerExpired;
 
-        private void HandleTimerExpired() => GameManager.Instance.TriggerWin();
+        void HandleTimerExpired() => GameManager.Instance.TriggerWin();
     }
 }

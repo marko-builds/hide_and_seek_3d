@@ -17,21 +17,22 @@ namespace HideAndSeek
     /// </summary>
     public class EnemySearchState : BaseState
     {
-        private readonly EnemyController _enemy;
-        private Vector3 _searchTarget;
+        readonly EnemyController _enemy;
+        Vector3 _searchTarget;
 
         // Phase tracking
-        private enum Phase { MovingToLKP, Sweeping, CheckingWaypoints }
-        private Phase _phase;
+        enum Phase { MovingToLKP, Sweeping, CheckingWaypoints }
+
+        Phase _phase;
 
         // Sweep
-        private int _sweepStep;
-        private float _sweepHoldTimer;
-        private Vector3 _sweepStartForward;
+        int _sweepStep;
+        float _sweepHoldTimer;
+        Vector3 _sweepStartForward;
 
         // Nearby waypoint check
-        private int[] _nearbyWaypointIndices;
-        private int _waypointCheckIndex;
+        int[] _nearbyWaypointIndices;
+        int _waypointCheckIndex;
 
         public EnemySearchState(EnemyController enemy, Vector3 lastKnownPosition)
         {
@@ -83,13 +84,13 @@ namespace HideAndSeek
 
         // ── Phase 1 ───────────────────────────────────────────────────────────────
 
-        private void StartMoveToTarget(Vector3 target)
+        void StartMoveToTarget(Vector3 target)
         {
             _phase = Phase.MovingToLKP;
             _enemy.Navigation.SetDestination(target);
         }
 
-        private void TickMovingToLKP()
+        void TickMovingToLKP()
         {
             if (_enemy.Navigation.IsNear(_searchTarget, _enemy.Data.waypointArrivalThreshold))
                 StartSweep();
@@ -97,7 +98,7 @@ namespace HideAndSeek
 
         // ── Phase 2 — Directional Sweep ───────────────────────────────────────────
 
-        private void StartSweep()
+        void StartSweep()
         {
             _phase = Phase.Sweeping;
             _sweepStep = 0;
@@ -106,7 +107,7 @@ namespace HideAndSeek
             _enemy.Navigation.Stop();
         }
 
-        private void TickSweeping()
+        void TickSweeping()
         {
             _sweepHoldTimer -= Time.deltaTime;
             if (_sweepHoldTimer > 0f)
@@ -130,7 +131,7 @@ namespace HideAndSeek
         }
 
         /// <summary>Returns the world-space direction for sweep step <paramref name="step"/>.</summary>
-        private Vector3 SweepDirection(int step)
+        Vector3 SweepDirection(int step)
         {
             float angleDeg = step * (360f / _enemy.Data.searchSweepDirectionCount);
             return Quaternion.AngleAxis(angleDeg, Vector3.up) * _sweepStartForward;
@@ -138,7 +139,7 @@ namespace HideAndSeek
 
         // ── Phase 3 — Waypoint Check ──────────────────────────────────────────────
 
-        private void StartWaypointCheck()
+        void StartWaypointCheck()
         {
             _phase = Phase.CheckingWaypoints;
             _waypointCheckIndex = 0;
@@ -153,7 +154,7 @@ namespace HideAndSeek
             _enemy.Navigation.SetDestination(_enemy.Waypoints[_nearbyWaypointIndices[0]].position);
         }
 
-        private void TickCheckingWaypoints()
+        void TickCheckingWaypoints()
         {
             if (_waypointCheckIndex >= _nearbyWaypointIndices.Length)
             {
@@ -169,7 +170,7 @@ namespace HideAndSeek
                 _enemy.Navigation.SetDestination(_enemy.Waypoints[_nearbyWaypointIndices[_waypointCheckIndex]].position);
         }
 
-        private void FinishSearch()
+        void FinishSearch()
         {
             _enemy.Detection.SuspicionMeter.Reset();
             _enemy.ChangeState(new EnemyPatrolState(_enemy, resumeAtNearest: true));
@@ -181,7 +182,7 @@ namespace HideAndSeek
         /// Returns the indices of the <paramref name="count"/> nearest waypoints to the seeker,
         /// sorted by ascending distance (F-S1).
         /// </summary>
-        private int[] FindNearestWaypointIndices(int count)
+        int[] FindNearestWaypointIndices(int count)
         {
             var waypoints = _enemy.Waypoints;
             if (waypoints == null || waypoints.Length == 0)

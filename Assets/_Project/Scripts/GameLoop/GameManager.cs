@@ -54,7 +54,7 @@ namespace HideAndSeek
 
         // ── Private ───────────────────────────────────────────────────────────────
 
-        private void ChangeState(GameState newState)
+        void ChangeState(GameState newState)
         {
             CurrentState = newState;
             OnGameStateChanged?.Invoke(newState);

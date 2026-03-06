@@ -11,19 +11,19 @@ namespace HideAndSeek
     /// </summary>
     public class ObjectiveToken : InteractableBase
     {
-        [SerializeField] private ObjectiveData _data;
+        [SerializeField] ObjectiveData _data;
 
-        private bool _isCollected;
+        bool _isCollected;
 
         // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-        private void Awake()
+        void Awake()
         {
             CanInteract = true;
             ObjectiveRegistry.Instance?.Register(this);
         }
 
-        private void OnDestroy()
+        void OnDestroy()
         {
             if (!_isCollected)
                 ObjectiveRegistry.Instance?.Unregister(this);
@@ -50,13 +50,13 @@ namespace HideAndSeek
 
         // ── Private ───────────────────────────────────────────────────────────────
 
-        private void SpawnVFX()
+        void SpawnVFX()
         {
             if (_data == null || _data.collectionVFXPrefab == null) return;
             Object.Instantiate(_data.collectionVFXPrefab, transform.position, Quaternion.identity);
         }
 
-        private void PlaySFX()
+        void PlaySFX()
         {
             if (_data == null) return;
             AudioManager.Instance?.Play(_data.collectionSFXKey);

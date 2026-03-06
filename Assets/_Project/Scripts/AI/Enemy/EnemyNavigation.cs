@@ -10,13 +10,13 @@ namespace HideAndSeek
     [RequireComponent(typeof(NavMeshAgent))]
     public class EnemyNavigation : MonoBehaviour
     {
-        private NavMeshAgent _agent;
+        NavMeshAgent _agent;
 
         public bool IsAtDestination => !_agent.pathPending
             && _agent.hasPath
             && _agent.remainingDistance <= _agent.stoppingDistance;
 
-        private void Awake() => _agent = GetComponent<NavMeshAgent>();
+        void Awake() => _agent = GetComponent<NavMeshAgent>();
 
         public void SetDestination(Vector3 destination) => _agent.SetDestination(destination);
 

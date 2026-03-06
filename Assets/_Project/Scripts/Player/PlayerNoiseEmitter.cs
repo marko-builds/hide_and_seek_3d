@@ -8,16 +8,16 @@ namespace HideAndSeek
     /// </summary>
     public class PlayerNoiseEmitter : MonoBehaviour, INoiseMaker
     {
-        [SerializeField] private PlayerData _data;
+        [SerializeField] PlayerData _data;
 
         public float CurrentNoiseLevel { get; private set; }
         public string NoiseTag => "Player";
 
-        private PlayerMovement _movement;
+        PlayerMovement _movement;
 
-        private void Awake() => _movement = GetComponent<PlayerMovement>();
+        void Awake() => _movement = GetComponent<PlayerMovement>();
 
-        private void Update()
+        void Update()
         {
             float multiplier = _movement.IsSprinting ? _data.sprintNoiseMultiplier
                              : _movement.IsCrouching ? _data.crouchNoiseMultiplier

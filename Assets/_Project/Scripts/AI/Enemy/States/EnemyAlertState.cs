@@ -11,9 +11,9 @@ namespace HideAndSeek
     /// </summary>
     public class EnemyAlertState : BaseState
     {
-        private readonly EnemyController _enemy;
-        private float _scanTimer;
-        private bool _facingComplete;
+        readonly EnemyController _enemy;
+        float _scanTimer;
+        bool _facingComplete;
 
         public EnemyAlertState(EnemyController enemy) => _enemy = enemy;
 

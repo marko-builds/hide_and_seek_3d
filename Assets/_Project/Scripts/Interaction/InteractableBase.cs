@@ -10,7 +10,7 @@ namespace HideAndSeek
     /// </summary>
     public abstract class InteractableBase : MonoBehaviour, IInteractable
     {
-        [SerializeField] private UnityEvent<PlayerController> _onInteract;
+        [SerializeField] UnityEvent<PlayerController> _onInteract;
 
         public virtual bool CanInteract { get; protected set; } = true;
 

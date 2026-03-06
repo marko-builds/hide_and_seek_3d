@@ -10,7 +10,7 @@ namespace HideAndSeek
     /// </summary>
     public class HidingSpotRegistry : SceneSingleton<HidingSpotRegistry>
     {
-        private readonly List<HidingSpot> _spots = new List<HidingSpot>();
+        readonly List<HidingSpot> _spots = new List<HidingSpot>();
 
         public void Register(HidingSpot spot)
         {

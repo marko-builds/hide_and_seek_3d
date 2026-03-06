@@ -12,8 +12,8 @@ namespace HideAndSeek
     [RequireComponent(typeof(EnemyNavigation))]
     public class EnemyController : MonoBehaviour
     {
-        [SerializeField] private EnemyData _data;
-        [SerializeField] private Transform[] _waypoints;
+        [SerializeField] EnemyData _data;
+        [SerializeField] Transform[] _waypoints;
 
         public EnemyData Data => _data;
         public Transform[] Waypoints => _waypoints;
@@ -43,11 +43,11 @@ namespace HideAndSeek
         /// <summary>Fires when SuspicionMeter confirms the player has been caught.</summary>
         public event Action OnPlayerCaught;
 
-        private StateMachine _stateMachine;
+        StateMachine _stateMachine;
 
         // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-        private void Awake()
+        void Awake()
         {
             Detection = GetComponent<EnemyDetection>();
             Navigation = GetComponent<EnemyNavigation>();
@@ -56,20 +56,20 @@ namespace HideAndSeek
             SeekerRegistry.Instance?.Register(this);
         }
 
-        private void Start()
+        void Start()
         {
             Detection.SuspicionMeter.OnPlayerCaught += HandleSuspicionCaught;
             _stateMachine.ChangeState(new EnemyPatrolState(this));
         }
 
-        private void OnDestroy()
+        void OnDestroy()
         {
             SeekerRegistry.Instance?.Unregister(this);
             if (Detection != null)
                 Detection.SuspicionMeter.OnPlayerCaught -= HandleSuspicionCaught;
         }
 
-        private void Update()
+        void Update()
         {
             _stateMachine.Tick();
         }
@@ -78,6 +78,6 @@ namespace HideAndSeek
 
         // ── Private ───────────────────────────────────────────────────────────────
 
-        private void HandleSuspicionCaught() => OnPlayerCaught?.Invoke();
+        void HandleSuspicionCaught() => OnPlayerCaught?.Invoke();
     }
 }

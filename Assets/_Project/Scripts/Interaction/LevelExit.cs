@@ -15,12 +15,12 @@ namespace HideAndSeek
     /// </summary>
     public class LevelExit : InteractableBase, IChaseInteractable
     {
-        [SerializeField] private LevelExitData _data;
+        [SerializeField] LevelExitData _data;
 
         /// <summary>Fires when the player successfully uses this exit.</summary>
         public event Action OnExitUsed;
 
-        private bool _isUnlocked;
+        bool _isUnlocked;
 
         // ── CanInteract override: computed, ignores the base auto-property ─────────
 
@@ -34,13 +34,13 @@ namespace HideAndSeek
 
         // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-        private void OnEnable()
+        void OnEnable()
         {
             if (ObjectiveRegistry.Instance != null)
                 ObjectiveRegistry.Instance.OnAllObjectivesCollected += Unlock;
         }
 
-        private void OnDisable()
+        void OnDisable()
         {
             if (ObjectiveRegistry.Instance != null)
                 ObjectiveRegistry.Instance.OnAllObjectivesCollected -= Unlock;
@@ -48,17 +48,15 @@ namespace HideAndSeek
 
         // ── Unlock ────────────────────────────────────────────────────────────────
 
-        private void Unlock()
+        void Unlock()
         {
             _isUnlocked = true;
 
-            if (_data != null)
-            {
-                AudioManager.Instance?.Play(_data.unlockSFXKey);
+            if (_data == null) return;
+            AudioManager.Instance?.Play(_data.unlockSFXKey);
 
-                if (_data.unlockVFXPrefab != null)
-                    Object.Instantiate(_data.unlockVFXPrefab, transform.position, Quaternion.identity);
-            }
+            if (_data.unlockVFXPrefab != null)
+                Instantiate(_data.unlockVFXPrefab, transform.position, Quaternion.identity);
         }
 
         // ── Interaction ───────────────────────────────────────────────────────────
@@ -70,7 +68,7 @@ namespace HideAndSeek
                 AudioManager.Instance?.Play(_data.exitSFXKey);
 
                 if (_data.exitVFXPrefab != null)
-                    Object.Instantiate(_data.exitVFXPrefab, transform.position, Quaternion.identity);
+                    Instantiate(_data.exitVFXPrefab, transform.position, Quaternion.identity);
             }
 
             OnExitUsed?.Invoke();

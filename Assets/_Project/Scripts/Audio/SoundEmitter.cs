@@ -12,10 +12,10 @@ namespace HideAndSeek
     [RequireComponent(typeof(AudioSource))]
     public class SoundEmitter : MonoBehaviour, IPoolable
     {
-        private AudioSource _source;
-        private IObjectPool<SoundEmitter> _pool;
+        AudioSource _source;
+        IObjectPool<SoundEmitter> _pool;
 
-        private void Awake() => _source = GetComponent<AudioSource>();
+        void Awake() => _source = GetComponent<AudioSource>();
 
         public void Play(SoundData data, IObjectPool<SoundEmitter> pool)
         {
@@ -27,7 +27,7 @@ namespace HideAndSeek
             StartCoroutine(ReturnWhenFinished());
         }
 
-        private IEnumerator ReturnWhenFinished()
+        IEnumerator ReturnWhenFinished()
         {
             yield return WaitFor.Seconds(_source.clip.length / _source.pitch);
             _pool.Release(this);

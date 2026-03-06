@@ -8,8 +8,8 @@ namespace HideAndSeek
     /// </summary>
     public class EnemyIdleState : BaseState
     {
-        private readonly EnemyController _enemy;
-        private float _timer;
+        readonly EnemyController _enemy;
+        float _timer;
 
         public EnemyIdleState(EnemyController enemy) => _enemy = enemy;
 

@@ -8,13 +8,13 @@ namespace HideAndSeek
     /// </summary>
     public class RoundTimer : MonoBehaviour
     {
-        [SerializeField] private GameRulesData _rules;
+        [SerializeField] GameRulesData _rules;
 
         public event Action<float> OnTimerTick;
         public event Action OnTimerExpired;
 
         public float Remaining { get; private set; }
-        private bool _running;
+        bool _running;
 
         public void StartTimer()
         {
@@ -24,7 +24,7 @@ namespace HideAndSeek
 
         public void StopTimer() => _running = false;
 
-        private void Update()
+        void Update()
         {
             if (!_running) return;
 

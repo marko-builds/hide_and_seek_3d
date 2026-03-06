@@ -8,14 +8,14 @@ namespace HideAndSeek
     /// </summary>
     public class MusicController : MonoBehaviour
     {
-        [SerializeField] private SuspicionMeter _suspicionMeter;
-        [SerializeField] private AudioSource _ambientSource;
-        [SerializeField] private AudioSource _tensionSource;
+        [SerializeField] SuspicionMeter _suspicionMeter;
+        [SerializeField] AudioSource _ambientSource;
+        [SerializeField] AudioSource _tensionSource;
 
-        private void OnEnable() => _suspicionMeter.OnSuspicionChanged += HandleSuspicionChanged;
-        private void OnDisable() => _suspicionMeter.OnSuspicionChanged -= HandleSuspicionChanged;
+        void OnEnable() => _suspicionMeter.OnSuspicionChanged += HandleSuspicionChanged;
+        void OnDisable() => _suspicionMeter.OnSuspicionChanged -= HandleSuspicionChanged;
 
-        private void HandleSuspicionChanged(float value)
+        void HandleSuspicionChanged(float value)
         {
             _tensionSource.volume = value;
         }

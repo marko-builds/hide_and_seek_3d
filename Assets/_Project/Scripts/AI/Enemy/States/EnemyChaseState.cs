@@ -17,8 +17,8 @@ namespace HideAndSeek
     /// </summary>
     public class EnemyChaseState : BaseState
     {
-        private readonly EnemyController _enemy;
-        private float _navUpdateTimer;
+        readonly EnemyController _enemy;
+        float _navUpdateTimer;
 
         public EnemyChaseState(EnemyController enemy) => _enemy = enemy;
 

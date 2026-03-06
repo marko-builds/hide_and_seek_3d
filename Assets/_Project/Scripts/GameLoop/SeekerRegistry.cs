@@ -14,7 +14,7 @@ namespace HideAndSeek
     [DefaultExecutionOrder(-90)]
     public class SeekerRegistry : SceneSingleton<SeekerRegistry>
     {
-        private readonly List<EnemyController> _seekers = new();
+        readonly List<EnemyController> _seekers = new();
 
         /// <summary>Read-only view of all currently registered seekers.</summary>
         public IReadOnlyList<EnemyController> GetAll() => _seekers;

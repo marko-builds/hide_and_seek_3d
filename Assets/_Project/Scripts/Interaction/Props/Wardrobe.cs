@@ -20,15 +20,16 @@ namespace HideAndSeek
     public class Wardrobe : InteractableBase
     {
         [Header("Door Animation")]
-        [SerializeField] private Animator _animator;
-        [SerializeField, Min(0f)] private float _doorAnimationDuration = 0.4f;
+        [SerializeField]
+        Animator _animator;
+        [SerializeField, Min(0f)] float _doorAnimationDuration = 0.4f;
 
-        private static readonly int IsOpenParam = Animator.StringToHash("IsOpen");
+        static readonly int IsOpenParam = Animator.StringToHash("IsOpen");
 
-        private HidingSpot _hidingSpot;
-        private bool _isTransitioning;
+        HidingSpot _hidingSpot;
+        bool _isTransitioning;
 
-        private void Awake()
+        void Awake()
         {
             _hidingSpot = GetComponent<HidingSpot>();
         }
@@ -51,7 +52,7 @@ namespace HideAndSeek
             }
         }
 
-        private IEnumerator EnterSequence(PlayerController interactor)
+        IEnumerator EnterSequence(PlayerController interactor)
         {
             _isTransitioning = true;
             SetDoorOpen(true);
@@ -66,7 +67,7 @@ namespace HideAndSeek
             _isTransitioning = false;
         }
 
-        private IEnumerator ExitSequence(PlayerController interactor)
+        IEnumerator ExitSequence(PlayerController interactor)
         {
             _isTransitioning = true;
             SetDoorOpen(true);
@@ -80,7 +81,7 @@ namespace HideAndSeek
             _isTransitioning = false;
         }
 
-        private void SetDoorOpen(bool open)
+        void SetDoorOpen(bool open)
         {
             if (_animator != null)
                 _animator.SetBool(IsOpenParam, open);
