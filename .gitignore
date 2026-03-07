@@ -55,3 +55,7 @@ desktop.ini
 
 # Visual Studio
 .vs/
+
+# Production session files (ephemeral, not for version control)
+production/session-state/
+production/session-logs/
