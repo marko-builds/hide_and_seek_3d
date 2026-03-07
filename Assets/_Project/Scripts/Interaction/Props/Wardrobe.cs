@@ -57,7 +57,7 @@ namespace HideAndSeek
             _isTransitioning = true;
             SetDoorOpen(true);
 
-            if (_animator != null)
+            if (_animator)
                 yield return WaitFor.Seconds(_doorAnimationDuration);
 
             if (_hidingSpot.TryEnter(interactor.Hiding))
@@ -72,7 +72,7 @@ namespace HideAndSeek
             _isTransitioning = true;
             SetDoorOpen(true);
 
-            if (_animator != null)
+            if (_animator)
                 yield return WaitFor.Seconds(_doorAnimationDuration);
 
             interactor.Hiding.ExitHidingSpot();
@@ -83,7 +83,7 @@ namespace HideAndSeek
 
         void SetDoorOpen(bool open)
         {
-            if (_animator != null)
+            if (_animator)
                 _animator.SetBool(IsOpenParam, open);
         }
     }
