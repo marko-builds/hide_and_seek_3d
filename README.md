@@ -84,13 +84,13 @@ Assets/_Project/
 
 **Requirements**
 - Unity 6.3 LTS (6000.3.10f1)
-- Git LFS (if assets exceed GitHub file limits)
+- Git LFS
 
 **Steps**
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/<username>/hide-and-seek-3d.git
+   git clone https://github.com/Idzuo32/hide-and-seek-3d.git
    ```
 2. Open Unity Hub → **Add project from disk** → select the cloned folder.
 3. Unity will import assets and compile scripts on first open (this may take a few minutes).
@@ -98,12 +98,6 @@ Assets/_Project/
 5. Press **Play**.
 
 > The project targets PC (Windows/Linux/macOS). Mobile renderer assets are included but the game is not optimised for mobile.
-
----
-
-## Screenshots
-
-*Screenshots coming soon.*
 
 ---
 
