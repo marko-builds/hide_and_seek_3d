@@ -26,15 +26,14 @@ namespace HideAndSeek
         // IDetectable
         [SerializeField] DetectionProfile _detectionProfile = new();
         public DetectionProfile DetectionProfile => _detectionProfile;
-        public void OnDetected() { /* TODO: raise caught event */ }
 
-        void Awake()
-        {
-            InputHandler = GetComponent<PlayerInputHandler>();
-            Movement = GetComponent<PlayerMovement>();
-            Hiding = GetComponent<PlayerHiding>();
-            Interaction = GetComponent<PlayerInteraction>();
-            NoiseEmitter = GetComponent<PlayerNoiseEmitter>();
-        }
+        /// <summary>
+        /// Called by the detection system when the player is caught.
+        /// Catching is handled via <see cref="SuspicionMeter.OnPlayerCaught"/> →
+        /// <see cref="EnemyController.OnPlayerCaught"/> → <see cref="GameLoop.LoseConditionEvaluator"/>.
+        /// IDetectable is kept on PlayerController for detection-system queries; no additional
+        /// action is taken here.
+        /// </summary>
+        public void OnDetected() { }
     }
 }

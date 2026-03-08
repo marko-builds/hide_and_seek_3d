@@ -3,14 +3,14 @@ using UnityEngine;
 namespace HideAndSeek
 {
     /// <summary>
-    /// Discovers all EnemyControllers in the scene and triggers TriggerLose when any
-    /// seeker catches the player.
+    /// Subscribes to all registered seekers via <see cref="SeekerRegistry"/> and triggers
+    /// <see cref="GameManager.TriggerLose"/> when any seeker catches the player.
     /// </summary>
     public class LoseConditionEvaluator : MonoBehaviour
     {
         void Start()
         {
-            foreach (var enemy in FindObjectsByType<EnemyController>(FindObjectsSortMode.None))
+            foreach (var enemy in SeekerRegistry.Instance.GetAll())
                 enemy.OnPlayerCaught += HandlePlayerCaught;
         }
 

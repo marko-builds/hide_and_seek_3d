@@ -13,6 +13,6 @@ namespace HideAndSeek
         void OnEnable() => _roundTimer.OnTimerExpired += HandleTimerExpired;
         void OnDisable() => _roundTimer.OnTimerExpired -= HandleTimerExpired;
 
-        void HandleTimerExpired() => GameManager.Instance.TriggerWin();
+        void HandleTimerExpired() => GameManager.Instance?.TriggerWin();
     }
 }
