@@ -173,13 +173,17 @@ namespace HideAndSeek
                 OnSuspicionChanged?.Invoke(SuspicionNormalized);
         }
 
-        /// <summary>Resets suspicion to 0 and state to Unaware. Call on respawn or restart.</summary>
+        /// <summary>
+        /// Resets suspicion and state. Call on respawn or round restart.
+        /// In Phase 2, suspicion is clamped to <see cref="Phase2SuspicionFloor"/> rather than 0
+        /// so the escalation floor is honoured immediately without waiting for the next Tick.
+        /// </summary>
         public void Reset()
         {
             float prevSuspicion = Suspicion;
             SeekState prevState = State;
 
-            Suspicion = 0f;
+            Suspicion = Phase2SuspicionFloor;
             _detectionCooldownTimer = 0f;
             _chaseNoInputTimer = 0f;
             _catchDwellTimer = 0f;
@@ -188,8 +192,8 @@ namespace HideAndSeek
 
             if (prevState != SeekState.Unaware)
                 OnStateChanged?.Invoke(prevState, State);
-            if (!Mathf.Approximately(prevSuspicion, 0f))
-                OnSuspicionChanged?.Invoke(0f);
+            if (!Mathf.Approximately(prevSuspicion, Phase2SuspicionFloor))
+                OnSuspicionChanged?.Invoke(SuspicionNormalized);
         }
 
         /// <summary>
