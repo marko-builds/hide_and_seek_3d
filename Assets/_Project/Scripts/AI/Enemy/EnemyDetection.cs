@@ -18,7 +18,7 @@ namespace HideAndSeek
     public class EnemyDetection : MonoBehaviour
     {
         [SerializeField] LayerMask _obstructionMask;
-        [SerializeField] Transform _player;
+        [SerializeField] PlayerController _player;
 
         // ── Public API ────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ namespace HideAndSeek
         /// <summary>True if a LoS raycast to the player succeeded last FixedUpdate tick.</summary>
         public bool PlayerVisible => _playerVisible;
 
-        public Transform Player => _player;
+        public Transform Player => _player != null ? _player.transform : null;
         public IDetectable PlayerDetectable => _playerDetectable;
         public Vector3 LastKnownPlayerPosition => _lastKnownPlayerPosition;
 
@@ -41,6 +41,7 @@ namespace HideAndSeek
         // ── Private ───────────────────────────────────────────────────────────────
 
         NoiseListener _noiseListener;
+        FieldOfView _fov;
         EnemyData _data;
         IHideable _playerHideable;
         IDetectable _playerDetectable;
@@ -58,13 +59,14 @@ namespace HideAndSeek
         {
             _noiseListener  = GetComponent<NoiseListener>();
             SuspicionMeter  = GetComponent<SuspicionMeter>();
+            _fov            = GetComponent<FieldOfView>();
             _data           = GetComponent<EnemyController>().Data;
 
             if (_player != null)
             {
-                _playerHideable    = _player.GetComponent<IHideable>();
-                _playerDetectable  = _player.GetComponent<IDetectable>();
-                _playerMovement    = _player.GetComponent<PlayerMovement>();
+                _playerHideable    = _player;           // PlayerController implements IHideable
+                _playerDetectable  = _player;           // PlayerController implements IDetectable
+                _playerMovement    = _player.Movement;
             }
 
             // Mirror Chase-state transitions onto legacy events so EnemyChaseState still works
@@ -86,34 +88,31 @@ namespace HideAndSeek
             if (_player == null) return;
 
             float dt = Time.fixedDeltaTime;
+            Vector3 playerPos = _player.transform.position;
             bool isHidden = _playerHideable != null && _playerHideable.IsHidden;
 
-            // ── Visual detection (F1 gate → F2 delta) ───────────────────────────
+            // ── Visual detection (F1+V-3 gate → F2 delta) ────────────────────────
+            // Gate delegates to FieldOfView.IsInDetectionVolume which owns all FOV/range
+            // logic including the GDD Rule V-3 close-range override.
             _playerVisible = false;
             float visualDeltaPerSec = 0f;
             bool hasLoS = false;
 
             if (!isHidden)
             {
-                Vector3 toPlayer  = _player.position - transform.position;
-                float distance    = toPlayer.magnitude;
+                Vector3 toPlayer    = playerPos - transform.position;
+                float distance      = toPlayer.magnitude;
                 float angleToPlayer = Vector3.Angle(transform.forward, toPlayer.normalized);
 
-                bool inRange = distance <= _data.detectionRange;
-
-                // Close detection: skip FOV angle check (GDD Rule V-3 close-range override)
-                bool inFov = distance <= _data.closeDetectionRange
-                           || angleToPlayer <= _data.fieldOfViewAngle * 0.5f;
-
-                if (inRange && inFov)
+                if (_fov.IsInDetectionVolume(playerPos))
                 {
                     hasLoS = LineOfSightChecker.HasLineOfSight(
-                        transform.position, _player.position, _obstructionMask);
+                        transform.position, playerPos, _obstructionMask);
 
                     if (hasLoS)
                     {
                         _playerVisible = true;
-                        _lastKnownPlayerPosition = _player.position;
+                        _lastKnownPlayerPosition = playerPos;
                         visualDeltaPerSec = ComputeVisualDelta(distance, angleToPlayer);
                     }
                 }
@@ -138,7 +137,7 @@ namespace HideAndSeek
 
             // ── Catch radius check ───────────────────────────────────────────────
             bool playerInCatchRadius =
-                Vector3.Distance(transform.position, _player.position) <= _data.catchDistance;
+                Vector3.Distance(transform.position, playerPos) <= _data.catchDistance;
 
             // ── Drive SuspicionMeter ─────────────────────────────────────────────
             // audioSpike = 0 for first pass; wired in task 1.2
