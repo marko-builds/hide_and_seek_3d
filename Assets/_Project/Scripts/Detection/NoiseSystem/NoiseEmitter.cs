@@ -1,13 +1,12 @@
 using System;
-using UnityEngine;
 
 namespace HideAndSeek
 {
     /// <summary>
-    /// MonoBehaviour that broadcasts NoiseEvents via a static event bus.
-    /// Any NoiseListener in the scene can subscribe regardless of object hierarchy.
+    /// Static event bus for noise events. Any NoiseListener in the scene can subscribe
+    /// regardless of object hierarchy. Has no instance state and requires no GameObject.
     /// </summary>
-    public class NoiseEmitter : MonoBehaviour
+    public static class NoiseEmitter
     {
         public static event Action<NoiseEvent> OnNoiseEmitted;
 
