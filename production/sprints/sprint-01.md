@@ -49,7 +49,7 @@ Ordered by implementation dependency. Complete in this sequence.
 | 1.5 | Implement LevelExitSystem; place exit trigger in Level_1; wire to OnAllObjectivesCollected unlock | | ✅ done (scripts only — scene placement in 1.8) | design/gdd/level-exit-system.md |
 | 1.6 | Implement Wardrobe — the concrete IInteractable HidingSpot; place at least two in Level_1 | | ✅ done (scripts only — scene placement in 1.8) | design/gdd/hiding-spot-system.md |
 | 1.7 | Connect WinConditionEvaluator → WinUI and LoseConditionEvaluator → GameOverUI | | ✅ done | design/gdd/win-game-over-screens.md |
-| 1.8 | Commit and stabilize Level_1.unity: floor, walls, 2 hiding spots, 1 objective token, 1 enemy patrol route, 1 exit trigger, NavMesh baked | | pending | — |
+| 1.8 | Commit and stabilize Level_1.unity: floor, walls, 2 hiding spots, 1 objective token, 1 enemy patrol route, 1 exit trigger, NavMesh baked | | ✅ done | — |
 | 1.9 | Wire minimum audio: footsteps (walk/crouch/sprint surfaces), detection alert sting | | pending | design/gdd/footstep-audio.md |
 
 ### P2 — Quality (target this sprint, not blocking)
