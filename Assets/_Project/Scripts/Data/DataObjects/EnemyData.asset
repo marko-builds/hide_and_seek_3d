@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: EnemyData
   m_EditorClassIdentifier: Assembly-CSharp::HideAndSeek.EnemyData
   detectionRange: 15
-  fieldOfViewAngle: 60
+  fieldOfViewAngle: 90
   baseDetectionRate: 15
   distanceFalloffExponent: 2
   angleFalloffExponent: 2
   crouchStealthMultiplier: 0.4
   searchingVisualDetectionMultiplier: 1.5
-  closeDetectionRange: 3
+  closeDetectionRange: 2
   alertThreshold: 25
   searchingThreshold: 60
   chaseThreshold: 85
@@ -39,9 +39,9 @@ MonoBehaviour:
   creepingDreadRate: 3
   hearingThreshold: 0.35
   hearingRange: 10
-  patrolSpeed: 6
-  investigateSpeed: 8
-  waypointArrivalThreshold: 0.3
+  patrolSpeed: 4
+  investigateSpeed: 5
+  waypointArrivalThreshold: 2
   alertTurnSpeed: 90
   alertScanDuration: 2.5
   searchSpeedMultiplier: 1.3
@@ -54,4 +54,4 @@ MonoBehaviour:
   idleWaitDuration: 2
   investigationLookDuration: 3
   lostSightDuration: 2
-  patrolDwellDuration: 1.5
+  patrolDwellDuration: 1
