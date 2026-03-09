@@ -36,7 +36,6 @@ namespace HideAndSeek
             if (_isCollected) return;
             if (GameManager.Instance == null
                 || GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
-
             _isCollected = true;
             CanInteract = false;
 

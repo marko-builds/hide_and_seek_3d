@@ -45,7 +45,6 @@ namespace HideAndSeek
         public override void Tick()
         {
             SeekState state = _enemy.Detection.SuspicionMeter.State;
-
             if (state >= SeekState.Chase)
             {
                 _enemy.ChangeState(new EnemyChaseState(_enemy));
@@ -63,7 +62,6 @@ namespace HideAndSeek
                 _enemy.ChangeState(new EnemyAlertState(_enemy));
                 return;
             }
-
             if (!HasWaypoints()) return;
 
             if (_dwelling)
@@ -89,6 +87,7 @@ namespace HideAndSeek
 
         void GoToCurrentWaypoint()
         {
+            Debug.Log($"Patrol State: Navigating to waypoint {_waypointIndex}");
             _enemy.Navigation.SetDestination(_enemy.Waypoints[_waypointIndex].position);
         }
 

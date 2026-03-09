@@ -20,11 +20,6 @@ namespace Utilities
                 if (!instance)
                 {
                     instance = Object.FindAnyObjectByType<T>();
-                    if (!instance)
-                    {
-                        Debug.LogError($"[SceneSingleton] No instance of {typeof(T).Name} found in the scene. " +
-                                       "This component must be present in the scene with its serialized references assigned.");
-                    }
                 }
 
                 return instance;

@@ -16,6 +16,7 @@ namespace HideAndSeek
 
         public virtual void Interact(PlayerController interactor)
         {
+			Debug.Log(CanInteract);
             if (!CanInteract) return;
             _onInteract.Invoke(interactor);
             OnInteracted(interactor);

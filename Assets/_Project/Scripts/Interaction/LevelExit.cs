@@ -51,10 +51,11 @@ namespace HideAndSeek
         void Unlock()
         {
             _isUnlocked = true;
-
+	
+			Debug.Log(GameManager.Instance.CurrentState);	
             if (_data == null) return;
             AudioManager.Instance?.Play(_data.unlockSFXKey);
-
+			
             if (_data.unlockVFXPrefab != null)
                 Instantiate(_data.unlockVFXPrefab, transform.position, Quaternion.identity);
         }
@@ -70,7 +71,6 @@ namespace HideAndSeek
                 if (_data.exitVFXPrefab != null)
                     Instantiate(_data.exitVFXPrefab, transform.position, Quaternion.identity);
             }
-
             OnExitUsed?.Invoke();
             GameManager.Instance?.TriggerWin();
         }
