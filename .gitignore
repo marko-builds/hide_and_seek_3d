@@ -39,6 +39,9 @@ ExportedObj/
 # Unity3D generated meta files are only required for non-empty folders
 # Empty folders should be deleted by Unity
 
+# LibreOffice lock files
+.~lock.*#
+
 # OS generated
 .DS_Store
 .DS_Store?
