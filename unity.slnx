@@ -1,0 +1,10 @@
+﻿<Solution>
+  <Project Path="RBG.Mulligan.csproj" />
+  <Project Path="Assembly-CSharp-Editor-firstpass.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="BetterHierarchy.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="BetterHierarchyDemoScripts.csproj" />
+  <Project Path="Assembly-CSharp-firstpass.csproj" />
+  <Project Path="sc.utilities.selectionhistory.editor.csproj" />
+</Solution>
