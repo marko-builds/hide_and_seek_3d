@@ -90,7 +90,7 @@ Assets/_Project/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Idzuo32/hide-and-seek-3d.git
+   git clone https://github.com/marko-builds/hide_and_seek_3d.git
    ```
 2. Open Unity Hub → **Add project from disk** → select the cloned folder.
 3. Unity will import assets and compile scripts on first open (this may take a few minutes).
